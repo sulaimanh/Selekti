@@ -1,2 +1,2 @@
-# PhotoSelect
-Automating the process of separating the good pictures from the bad ones.
+# Slekti
+Welcome to Slekti. We help the user through the stressful process of separating the good photos from the bad ones through an automated process.
