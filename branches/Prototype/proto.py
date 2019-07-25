@@ -15,6 +15,7 @@ from keras.applications import imagenet_utils
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import load_img
 from imutils import paths
+from image_data import ImageData
 import numpy as np
 import os
 
@@ -27,6 +28,37 @@ imagePaths = list(paths.list_images("training/images4AVA/images/"))
 
 # The number of imagePaths should reflect how many images are in the folder specified above
 print("Number of image paths: ", len(imagePaths))
+
+images = []
+AVA_dataset = open("AVA_dataset/AVA.txt", "r")
+
+for imagePath in imagePaths:
+    # imagePath = imagePaths[0]
+
+    # File names are of the form 'X.jpg' where 'X' is the image ID.
+    fileName = os.path.split(imagePath)[1]
+    imageID = os.path.splitext(fileName)[0]
+
+    imgData = ImageData()
+
+    # Now that we have the image ID, we need to find out its corresponding score.
+    # AVA.txt is organized by 15 columns. The second column of each line stores 
+    # the image ID. Columns 3 through 12 store counts of "aesthetic ratings" (scores).
+    # For example, column 3 has counts of score 1 and column 12 has counts of score 10.
+    for line in AVA_dataset:
+        dataFields = line.split(" ")
+        ID = dataFields[1]
+
+        if imageID == ID :
+            imgData.setID(imageID)
+            imgData.setAvgScore(list(map((int), dataFields[2:12])))
+    
+    images.append(imgData)
+
+AVA_dataset.close()
+print("Number of images matched in AVA.txt: ", len(images))
+
+''' I commented this out for now so I could focus on matching the image ID's with their scores.
 
 # Adrian uses a Label Encoder to specify if a feature vector represents either a food or non-food item.
 # What we need to do is specify the aesthetic score a feature vector represents. 
@@ -54,3 +86,4 @@ for (b,i) in enumerate(range(0, len(imagePaths), BATCH_SIZE)):
 
         # This doesn't work. Gotta do the math and figure out the right shape size..
         features = features.reshape((features.shape[0], 7 * 7 * 512))
+'''
