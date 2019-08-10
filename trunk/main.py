@@ -116,13 +116,16 @@ class Ui_PhotoSelect(QtGui.QMainWindow):
         
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         for filename in os.listdir(self.dir_):
+            fullpath = self.dir_ + '/' + filename
+            
             try:
                 # Attempts to open image. May need to adjust to work with more image file types.
-                im = Image.open(filename)
-                self.importedFiles.append(self.dir_ + '/' + filename)
+                im = Image.open(open(fullpath, 'rb'))
+                im.close()
+                self.importedFiles.append(fullpath)
                 if(isMainImageUpdated == False):
                     isMainImageUpdated = True 
-                    self.updateMainImage(filename)
+                    self.updateMainImage(fullpath)
 
             except IOError:
                 self.unimportedFiles.append(filename)
