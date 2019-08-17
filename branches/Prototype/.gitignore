@@ -1,3 +1,5 @@
 venv/
 training/
 AVA_dataset/
+.vscode/
+__pycache__
