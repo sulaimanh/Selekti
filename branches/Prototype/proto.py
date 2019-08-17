@@ -32,14 +32,16 @@ print("Number of image paths: ", len(imagePaths))
 s = Score()
 scores = s.getScores()
 
+csv = open("feature_vectors.csv", "w")
+
 # A batch is a collection of training samples that are sent into a network
 # to train it. The larger the batch size, the more memory is required, thus 
 # the process is slower, however the gradient is more accurate. 
-'''
+sampleSize = 32
 BATCH_SIZE = 32
-for (b,i) in enumerate(range(0, len(imagePaths), BATCH_SIZE)):
+for (b,i) in enumerate(range(0, sampleSize, BATCH_SIZE)):
     print("[INFO] processing batch {}/{}".format(b + 1,
-			int(np.ceil(len(imagePaths) / float(BATCH_SIZE)))))
+			int(np.ceil(sampleSize / float(BATCH_SIZE)))))
 
     batchPaths = imagePaths[i:i + BATCH_SIZE]
     batchImages = []
@@ -54,7 +56,14 @@ for (b,i) in enumerate(range(0, len(imagePaths), BATCH_SIZE)):
 
         batchImages.append(image)
 
-        batchImages = np.vstack(batchImages)
-        features = model.predict(batchImages, batch_size=BATCH_SIZE)
-        features = features.reshape((features.shape[0], 7 * 7 * 512))
-'''
+    batchImages = np.vstack(batchImages)
+    features = model.predict(batchImages, batch_size=BATCH_SIZE)
+    features = features.reshape((features.shape[0], 7 * 7 * 512))
+
+    # loop over the scores and extracted features
+    for (score, vec) in zip(scores, features):
+        # construct a row that exists of the average score and extracted features
+        vec = ",".join([str(v) for v in vec])
+        csv.write("{},{}\n".format(score, vec))
+
+csv.close()
