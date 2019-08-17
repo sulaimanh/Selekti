@@ -29,8 +29,8 @@ imagePaths = list(paths.list_images("training/images4AVA/images/"))
 # The number of imagePaths should reflect how many images are in the folder specified above
 print("Number of image paths: ", len(imagePaths))
 
-score = Score()
-scores = score.getScores()
+s = Score()
+scores = s.getScores()
 
 # A batch is a collection of training samples that are sent into a network
 # to train it. The larger the batch size, the more memory is required, thus 
