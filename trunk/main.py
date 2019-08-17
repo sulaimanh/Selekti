@@ -12,69 +12,73 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PIL import Image
 import os, sys
+import random
 
-try:
-    _fromUtf8 = QtCore.QString.fromUtf8
-except AttributeError:
-    def _fromUtf8(s):
-        return s
 
-try:
-    _encoding = QtGui.QApplication.UnicodeUTF8
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig, _encoding)
-except AttributeError:
-    def _translate(context, text, disambig):
-        return QtGui.QApplication.translate(context, text, disambig)
+# try:
+#     _encoding = QtGui.QApplication.UnicodeUTF8
+#     def _translate(context, text, disambig):
+#         return QtGui.QApplication.translate(context, text, disambig, _encoding)
+# except AttributeError:
+#     def _translate(context, text, disambig):
+#         return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_PhotoSelect(QtGui.QMainWindow):
+
+    unimportedFiles = []
+    importedFiles = []
+    isMainImageUpdated = False;
+
     def __init__(self, parent=None):
         super(Ui_PhotoSelect, self).__init__(parent)
-    def setupUi(self, PhotoSelect):
-        PhotoSelect.setObjectName(_fromUtf8("PhotoSelect"))
-        PhotoSelect.resize(900, 600)
-        self.dockWidgetContents = QtGui.QWidget()
-        self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
-        self.progressBar = QtGui.QProgressBar(self.dockWidgetContents)
+        self.setWindowTitle(("PhotoSelect"))
+        self.setGeometry(200, 200, 900, 600)
+        
+        self.progressBar = QtGui.QProgressBar(self)
         self.progressBar.setGeometry(QtCore.QRect(20, 520, 801, 21))
         self.progressBar.setProperty("value", 0)
-        self.progressBar.setObjectName(_fromUtf8("progressBar"))
-        self.unimportedFiles = []
-        self.importedFiles = []
+        self.progressBar.setObjectName(("progressBar"))
 
-        self.start_Button = QtGui.QPushButton('Start', self.dockWidgetContents)
+        self.start_Button = QtGui.QPushButton('Start', self)
+        self.start_Button.setEnabled(False)
         self.start_Button.setGeometry(QtCore.QRect(290, 480, 97, 27))
         self.start_Button.clicked.connect(self.start_Button_clicked)
         
-        self.train_Button = QtGui.QPushButton('Train', self.dockWidgetContents)
+        self.train_Button = QtGui.QPushButton('Train', self)
+        self.train_Button.setEnabled(False)
         self.train_Button.setGeometry(QtCore.QRect(440, 480, 97, 27))
-        self.train_Button.clicked.connect(self.train_Button_clicked)
+        self.train_Button.clicked.connect(self.train_Button_clicked)            
         
-        self.browse_Button = QtGui.QPushButton('Browse', self.dockWidgetContents)
-        self.browse_Button.setGeometry(QtCore.QRect(50, 10, 97, 27))
-        self.browse_Button.clicked.connect(self.browse_Button_clicked) 
+        self.mainMenu = self.menuBar()
 
-        self.instructions_Button = QtGui.QPushButton('Instructions', self.dockWidgetContents)
-        self.instructions_Button.setGeometry(QtCore.QRect(690, 10, 97, 27))
-        self.instructions_Button.clicked.connect(self.instructions_Button_clicked)
-        
-        self.warnings_Button = QtGui.QPushButton('Warnings', self.dockWidgetContents)
-        self.warnings_Button.setGeometry(QtCore.QRect(580, 10, 97, 27))
-        self.warnings_Button.clicked.connect(self.warnings_Button_clicked)
+        # Actions which can be seen from the drop-down of each menu selection
+        self.browseAction = QtGui.QAction("&Browse..", self)
+        self.browseAction.triggered.connect(self.browse_Button_clicked)
 
-        self.UserImages = QtGui.QLabel(self.dockWidgetContents)
-        self.UserImages.setGeometry(QtCore.QRect(100, 60, 701, 411))
-        self.UserImages.setObjectName(_fromUtf8("UserImages"))
-        PhotoSelect.setWidget(self.dockWidgetContents)
+        self.warningsAction = QtGui.QAction("&Warnings", self)
+        self.warningsAction.triggered.connect(self.warnings_Button_clicked)
 
-        self.retranslateUi(PhotoSelect)
-        QtCore.QMetaObject.connectSlotsByName(PhotoSelect)
-        
-    def retranslateUi(self, PhotoSelect):
-        PhotoSelect.setWindowTitle(_translate("PhotoSelect", "PhotoSelect", None))
-        self.UserImages.setText(_translate("PhotoSelect", "Default photos here", None))
-        self.UserImages.setPixmap(QPixmap("Slekit.png").scaled(701, 411, QtCore.Qt.KeepAspectRatio))
+        self.instructionsAction = QtGui.QAction("&Instructions", self)
+        self.instructionsAction.triggered.connect(self.instructions_Button_clicked)
+
+        # Menu selections that show on the menubar on the PhotoSelect screen
+        self.fileMenu = self.mainMenu.addMenu('&File')
+        self.fileMenu.addAction(self.browseAction)
+
+        self.warningsMenu = self.mainMenu.addMenu('&Warnings')
+        self.warningsMenu.addAction(self.warningsAction)
+
+        self.helpMenu = self.mainMenu.addMenu('&Help')
+        self.helpMenu.addAction(self.instructionsAction)
+
+        # Main image on the PhotoSelect screen
+        self.UserImages = QtGui.QLabel(self)
+        self.UserImages.setGeometry(QtCore.QRect(100, 60, 700, 400))
+        self.UserImages.setObjectName(("UserImages"))
+        self.UserImages.setPixmap(QPixmap("Slekit.png").scaled(700, 400, QtCore.Qt.KeepAspectRatio))
         self.UserImages.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.show()
 
     def warnings_Button_clicked(self, qmodelindex):
         self.warning_msg = QMessageBox()
@@ -91,10 +95,7 @@ class Ui_PhotoSelect(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()   
     def train_Button_clicked(self):
-        self.Train = QtGui.QDockWidget()
         self.ui1 = Ui_Train(self)
-        self.ui1.setupUi(self.Train)
-        self.Train.show()
  
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
@@ -106,26 +107,27 @@ class Ui_PhotoSelect(QtGui.QMainWindow):
              
     def browse_Button_clicked(self, firstImage):
         # Reads in the directory
-        self.dir_ = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
-        self.importedFiles = []
-        self.unimportedFiles = []
-        isMainImageUpdated = False;
+        self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
+
         
-        if not self.dir_:
-            raise Exception('Exception in browse_Button_clicked: self.dir_ was read as an empty string: {}'.format(self.dir_))
+        if not self.selected_directory:
+            raise Exception('Exception in browse_Button_clicked: self.selected_directory was read as an empty string: {}'.format(self.selected_directory))
         
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        for filename in os.listdir(self.dir_):
-            fullpath = self.dir_ + '/' + filename
+        for filename in os.listdir(self.selected_directory):
+            fullpath = self.selected_directory + '/' + filename
             
             try:
                 # Attempts to open image. May need to adjust to work with more image file types.
                 im = Image.open(open(fullpath, 'rb'))
                 im.close()
                 self.importedFiles.append(fullpath)
-                if(isMainImageUpdated == False):
-                    isMainImageUpdated = True 
+
+                if(self.isMainImageUpdated == False):
+                    self.isMainImageUpdated = True 
                     self.updateMainImage(fullpath)
+                    self.train_Button.setEnabled(True)
+                    self.start_Button.setEnabled(True)
 
             except IOError:
                 self.unimportedFiles.append(filename)
@@ -138,70 +140,74 @@ class Ui_PhotoSelect(QtGui.QMainWindow):
     def updateMainImage(self, image):
         self.UserImages.setPixmap(QPixmap(image).scaled(701, 411, QtCore.Qt.KeepAspectRatio))
 
-    def Imported_Files(self, filenames):
-        filenames = self.importedFiles
-        for files in filenames:
-            print files
-        return filenames
-
 class Ui_Train(QtGui.QMainWindow):
+    imgs = []
+
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
+        self.setWindowTitle(("Train"))
+        self.setGeometry(200, 200, 900, 600)
 
-    def setupUi(self, Train):
-        Train.setObjectName(_fromUtf8("Train"))
-        Train.resize(900, 600)
-        self.dockWidgetContents = QtGui.QWidget()
-        self.dockWidgetContents.setObjectName(_fromUtf8("dockWidgetContents"))
+        self.importedFiles = ImageData(self.imgs)
 
-        self.instructions_Button = QtGui.QPushButton('Instructions', self.dockWidgetContents)
-        self.instructions_Button.setGeometry(QtCore.QRect(775, 10, 97, 27))
-        self.instructions_Button.clicked.connect(self.instructions_Button_clicked)
+        self.mainMenu = self.menuBar()
+        # Actions which can be seen from the drop-down of each menu selection
+        self.instructionsAction = QtGui.QAction("&Instructions", self)
+        self.instructionsAction.triggered.connect(self.instructions_Button_clicked)
 
-        self.left_Button = QtGui.QPushButton('Left is better', self.dockWidgetContents)
+        # Menu selections that show on the menubar on the PhotoSelect screen
+        self.helpMenu = self.mainMenu.addMenu('&Help')
+        self.helpMenu.addAction(self.instructionsAction)
+
+        self.left_Button = QtGui.QPushButton('Left is better', self)
         self.left_Button.setGeometry(QtCore.QRect(150, 400, 110, 30))
         self.left_Button.clicked.connect(self.left_Button_clicked)
 
-        self.right_Button = QtGui.QPushButton('Right is better', self.dockWidgetContents)
+        self.right_Button = QtGui.QPushButton('Right is better', self)
         self.right_Button.setGeometry(QtCore.QRect(600, 400, 110, 30))
         self.right_Button.clicked.connect(self.right_Button_clicked)
         
-        self.finish_Button = QtGui.QPushButton('Finish', self.dockWidgetContents)
+        self.finish_Button = QtGui.QPushButton('Finish', self)
         self.finish_Button.setGeometry(QtCore.QRect(395, 450, 97, 27))
-        self.finish_Button.clicked.connect(self.finish_Button_clicked)
+        self.finish_Button.clicked.connect(self.close)
         
-        self.left_UserImages = QtGui.QLabel(self.dockWidgetContents)
+        self.left_UserImages = QtGui.QLabel(self)
         self.left_UserImages.setGeometry(QtCore.QRect(25, 40, 400, 350))
-        self.left_UserImages.setObjectName(_fromUtf8("left_UserImages"))
+        self.left_UserImages.setObjectName(("left_UserImages"))
         
-        self.right_UserImages = QtGui.QLabel(self.dockWidgetContents)
+        self.right_UserImages = QtGui.QLabel(self)
         self.right_UserImages.setGeometry(QtCore.QRect(450, 40, 400, 350))
-        self.right_UserImages.setObjectName(_fromUtf8("left_UserImages"))
-        
-        Train.setWidget(self.dockWidgetContents)
+        self.right_UserImages.setObjectName(("left_UserImages"))
 
-        self.retranslateUi(Train)
-        QtCore.QMetaObject.connectSlotsByName(Train)
-
-    def retranslateUi(self, Train):
-        Train.setWindowTitle(_translate("Train", "Train", None))
-        
-        self.left_UserImages.setText(_translate("PhotoSelect", "Default photos here", None))
-        self.left_UserImages.setPixmap(QPixmap("left.png").scaled(300, 300, QtCore.Qt.KeepAspectRatio))
+        # Initially display Train screen with two random pictures.
+        self.left_UserImages.setPixmap(QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
         self.left_UserImages.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.right_UserImages.setText(_translate("PhotoSelect", "Default photos here", None))
-        self.right_UserImages.setPixmap(QPixmap("right.png").scaled(300, 300, QtCore.Qt.KeepAspectRatio))
+        self.right_UserImages.setPixmap(QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
         self.right_UserImages.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.show()
     
     def left_Button_clicked(self):
-        print('Left Button Clicked')
+        print('Left Button Clicked') 
+        self.leftImage = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
+        self.left_UserImages.setPixmap(QPixmap(self.leftImage).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
+        self.left_UserImages.setAlignment(QtCore.Qt.AlignCenter)
+        print "Left Image is " + self.leftImage
+        # Some images are not printing. Fix all image types
+
 
     def right_Button_clicked(self):
         print('Right Button Clicked')
+        self.rightImage = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
+        self.right_UserImages.setPixmap(QPixmap(self.rightImage).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
+        self.right_UserImages.setAlignment(QtCore.Qt.AlignCenter)
+        print "Right Image is " + self.rightImage
+        # Some images are not printing. Fix all image types
 
     def finish_Button_clicked(self):
         print('Finish Button Clicked')
+        self.close
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
@@ -210,6 +216,13 @@ class Ui_Train(QtGui.QMainWindow):
         self.instructions_msg.setWindowTitle("Training")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
+
+# Keep track of all successfully imported images.
+class ImageData:
+    images = []
+    def __init__(self, retrievePhotos):
+        retrievePhotos = Ui_PhotoSelect()
+        self.images = retrievePhotos.importedFiles
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
@@ -233,9 +246,6 @@ if __name__ == "__main__":
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
 
-    PhotoSelect = QtGui.QDockWidget()
     ui = Ui_PhotoSelect()
-    ui.setupUi(PhotoSelect)
-    PhotoSelect.show()
     sys.exit(app.exec_())
 
