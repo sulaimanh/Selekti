@@ -10,7 +10,7 @@
 # food or non-food. We, on the other hand, want to couple each feature vector with a score (the aesthetic
 # rating in the AVA Dataset). 
 
-from keras.applications.inception_resnet_v2 import InceptionResNetV2
+from keras.applications import VGG16
 from keras.applications import imagenet_utils
 from keras.preprocessing.image import img_to_array
 from keras.preprocessing.image import load_img
@@ -19,7 +19,7 @@ from averages import Score
 import numpy as np
 import os
 
-model = InceptionResNetV2(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+model = VGG16(weights="imagenet", include_top=False)
 
 # I extracted 1 of the 64 zipped AVA image files (containing 255508 images) and placed the images
 # in the folder shown on line 22 which is relative to this proto.py file. ("proto.py" and the "training"
