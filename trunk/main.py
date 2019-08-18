@@ -23,15 +23,15 @@ import random
 #     def _translate(context, text, disambig):
 #         return QtGui.QApplication.translate(context, text, disambig)
 
-class Ui_PhotoSelect(QtGui.QMainWindow):
+class Ui_Selekti(QtGui.QMainWindow):
 
     unimportedFiles = []
     importedFiles = []
     isMainImageUpdated = False;
 
     def __init__(self, parent=None):
-        super(Ui_PhotoSelect, self).__init__(parent)
-        self.setWindowTitle(("PhotoSelect"))
+        super(Ui_Selekti, self).__init__(parent)
+        self.setWindowTitle(("Selekti"))
         self.setGeometry(200, 200, 900, 600)
         
         self.progressBar = QtGui.QProgressBar(self)
@@ -61,7 +61,7 @@ class Ui_PhotoSelect(QtGui.QMainWindow):
         self.instructionsAction = QtGui.QAction("&Instructions", self)
         self.instructionsAction.triggered.connect(self.instructions_Button_clicked)
 
-        # Menu selections that show on the menubar on the PhotoSelect screen
+        # Menu selections that show on the menubar on the Selekti screen
         self.fileMenu = self.mainMenu.addMenu('&File')
         self.fileMenu.addAction(self.browseAction)
 
@@ -71,11 +71,11 @@ class Ui_PhotoSelect(QtGui.QMainWindow):
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
 
-        # Main image on the PhotoSelect screen
+        # Main image on the Selekti screen
         self.UserImages = QtGui.QLabel(self)
         self.UserImages.setGeometry(QtCore.QRect(100, 60, 700, 400))
         self.UserImages.setObjectName(("UserImages"))
-        self.UserImages.setPixmap(QPixmap("Slekit.png").scaled(700, 400, QtCore.Qt.KeepAspectRatio))
+        self.UserImages.setPixmap(QPixmap("Selekti.png"))
         self.UserImages.setAlignment(QtCore.Qt.AlignCenter)
 
         self.show()
@@ -155,7 +155,7 @@ class Ui_Train(QtGui.QMainWindow):
         self.instructionsAction = QtGui.QAction("&Instructions", self)
         self.instructionsAction.triggered.connect(self.instructions_Button_clicked)
 
-        # Menu selections that show on the menubar on the PhotoSelect screen
+        # Menu selections that show on the menubar on the Selekti screen
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
 
@@ -221,7 +221,7 @@ class Ui_Train(QtGui.QMainWindow):
 class ImageData:
     images = []
     def __init__(self, retrievePhotos):
-        retrievePhotos = Ui_PhotoSelect()
+        retrievePhotos = Ui_Selekti()
         self.images = retrievePhotos.importedFiles
 
 if __name__ == "__main__":
@@ -246,6 +246,6 @@ if __name__ == "__main__":
     palette.setColor(QPalette.HighlightedText, Qt.black)
     app.setPalette(palette)
 
-    ui = Ui_PhotoSelect()
+    ui = Ui_Selekti()
     sys.exit(app.exec_())
 

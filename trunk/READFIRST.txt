@@ -1,4 +1,5 @@
-If you pyuic4 -x mainApplication.ui -o output.py on the ui file, you will generate the output file that is shown in the directory. However, the output file will not print the python.jpg image shown. This is because the current output.py file was modified and placed in this directory to show how to attach an image to a qt4 image.
-
+Building the UI:
+To build the ui as a standalone executable run the "pyinstaller main.py" command. 
+After the files have finished building correctly, go to the dist folder and you will be able to run the main.exe from in there. However, the logo will not be displayed unless you create a symbolic link to the trunk folder and run the application from the trunk directory instead. (Make a shortcut to the trunk directory)
 - Camilo 
 
