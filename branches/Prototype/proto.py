@@ -17,6 +17,7 @@ from keras.preprocessing.image import load_img
 from imutils import paths
 from averages import Score
 import numpy as np
+import sys
 import os
 
 model = VGG16(weights="imagenet", include_top=False)
@@ -24,7 +25,7 @@ model = VGG16(weights="imagenet", include_top=False)
 # I extracted 1 of the 64 zipped AVA image files (containing 255508 images) and placed the images
 # in the folder shown on line 22 which is relative to this proto.py file. ("proto.py" and the "training"
 # folder are in the same directory.)
-imagePaths = list(paths.list_images("training/images4AVA/images/"))
+imagePaths = list(paths.list_images(sys.argv[1] + ""))
 
 # The number of imagePaths should reflect how many images are in the folder specified above
 print("Number of image paths: ", len(imagePaths))
