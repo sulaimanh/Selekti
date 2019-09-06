@@ -7,12 +7,17 @@
 # WARNING! All changes made in this file will be lost!
 
 from PyQt4 import QtCore, QtGui
+from PyQt4.QtGui import QIcon, QPixmap
 from PyQt4 import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PIL import Image
 import os, sys
+from os import path
+QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
+QtGui.QImageReader.supportedImageFormats()
 import random
+import math
 
 
 # try:
@@ -27,26 +32,28 @@ class Ui_Selekti(QtGui.QMainWindow):
 
     unimportedFiles = []
     importedFiles = []
+    selected_directory = ""
     isMainImageUpdated = False;
 
     def __init__(self, parent=None):
         super(Ui_Selekti, self).__init__(parent)
         self.setWindowTitle(("Selekti"))
-        self.setGeometry(200, 200, 900, 600)
+        self.WINDOW_WIDTH = 900
+        self.WINDOW_HEIGHT = 600
+        self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         
         self.progressBar = QtGui.QProgressBar(self)
         self.progressBar.setGeometry(QtCore.QRect(20, 520, 801, 21))
-        self.progressBar.setProperty("value", 0)
-        self.progressBar.setObjectName(("progressBar"))
+        self.progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
         self.start_Button.setEnabled(False)
-        self.start_Button.setGeometry(QtCore.QRect(290, 480, 97, 27))
+        self.start_Button.setGeometry(QtCore.QRect(300, 480, 97, 27))
         self.start_Button.clicked.connect(self.start_Button_clicked)
         
         self.train_Button = QtGui.QPushButton('Train', self)
         self.train_Button.setEnabled(False)
-        self.train_Button.setGeometry(QtCore.QRect(440, 480, 97, 27))
+        self.train_Button.setGeometry(QtCore.QRect(500, 480, 97, 27))
         self.train_Button.clicked.connect(self.train_Button_clicked)            
         
         self.mainMenu = self.menuBar()
@@ -72,26 +79,33 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.helpMenu.addAction(self.instructionsAction)
 
         # Main image on the Selekti screen
-        self.UserImages = QtGui.QLabel(self)
-        self.UserImages.setGeometry(QtCore.QRect(100, 60, 700, 400))
-        self.UserImages.setObjectName(("UserImages"))
-        self.UserImages.setPixmap(QPixmap("Selekti.png"))
-        self.UserImages.setAlignment(QtCore.Qt.AlignCenter)
+        self.main_imageLabel = QtGui.QLabel(self)
+        self.mainImage = QPixmap("Selekti.png")
+        self.main_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
+        self.main_imageLabel.setObjectName(("main_imageLabel"))
+        self.main_imageLabel.setPixmap(self.mainImage)
+        # if self.mainImage.width() > self.WINDOW_WIDTH and self.mainImage.height() > self.WINDOW_HEIGHT:
+        #     self.resize(self.mainImage.width(),self.mainImage.height())
+        
+        self.main_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.show()
 
     def warnings_Button_clicked(self, qmodelindex):
-        self.warning_msg = QMessageBox()
-        self.warning_msg.setText("The following files were not imported:")
-        self.warning_msgText = ""
-
-        for filename in self.unimportedFiles:
-            self.warning_msgText += '- ' + filename + '\n'
-
-        self.warning_msg.setInformativeText(self.warning_msgText)
-        self.warning_msg.setWindowTitle("Warning")
-        self.warning_msg.setStandardButtons(QMessageBox.Ok)
-        retval = self.warning_msg.exec_()
+        
+        if not self.unimportedFiles:
+            self.warning_message_msg = QMessageBox()
+            self.warning_message_msg.setText("The following files were not imported:")
+            self.warning_msgText = "All files were imported. No errors"
+            self.warning_message_msg.setInformativeText(self.warning_msgText)
+            self.warning_message_msg.setStandardButtons(QMessageBox.Ok)
+            self.warning_message_msg.setWindowTitle("Warning")
+            retval = self.warning_message_msg.exec_()
+        else:
+            self.warning_msg = QListWidget()
+            self.warning_msg.addItems(self.unimportedFiles)
+            self.warning_msg.setWindowTitle("Unimported Files")
+            self.warning_msg.show()
 
     @QtCore.pyqtSlot()   
     def train_Button_clicked(self):
@@ -106,17 +120,48 @@ class Ui_Selekti(QtGui.QMainWindow):
         retval = self.instructions_msg.exec_()
              
     def browse_Button_clicked(self, firstImage):
-        # Reads in the directory
-        self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
 
-        
+        # Reads in the directory
+        if os.path.getsize("browse_cache.txt"):
+            # Revisit previous directory
+            self.browsing_cache = open("browse_cache.txt","r+")
+            self.previous_directory = self.browsing_cache.readline()
+            self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', self.previous_directory, QtGui.QFileDialog.ShowDirsOnly)            
+            self.browsing_cache.close()
+        else:
+            # This is the user's first time choosing a directory
+            self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
+ 
+        self.browsing_cache = open("browse_cache.txt","w")
+        self.browsing_cache.writelines(self.selected_directory)
+        self.browsing_cache.close() 
+
+        self.train_Button.setEnabled(False)
+        self.start_Button.setEnabled(False)
+        self.progressBar.setVisible(True)
+
+        # clears the cache
+        self.directory_contents = None
+        self.importedFiles.clear()
+        self.unimportedFiles.clear()
+
+        self.directory_contents = os.listdir(self.selected_directory)
+        self.size_of_directory = len(self.directory_contents)
+        self.isMainImageUpdated = False
+
+        self.progress = 0
+        self.progressBar.setValue(self.progress)
+
         if not self.selected_directory:
             raise Exception('Exception in browse_Button_clicked: self.selected_directory was read as an empty string: {}'.format(self.selected_directory))
         
+        if self.size_of_directory == 0:
+            raise Exception('Exception in browse_Button_clicked: Directory chosen is empty: {}'.format(self.self.size_of_directory))
+
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        for filename in os.listdir(self.selected_directory):
+        for filename in self.directory_contents:
             fullpath = self.selected_directory + '/' + filename
-            
+
             try:
                 # Attempts to open image. May need to adjust to work with more image file types.
                 im = Image.open(open(fullpath, 'rb'))
@@ -124,21 +169,29 @@ class Ui_Selekti(QtGui.QMainWindow):
                 self.importedFiles.append(fullpath)
 
                 if(self.isMainImageUpdated == False):
+                    print(fullpath)
                     self.isMainImageUpdated = True 
-                    self.updateMainImage(fullpath)
+                    self.updateMainImage(self.importedFiles[0])
+
                     self.train_Button.setEnabled(True)
                     self.start_Button.setEnabled(True)
 
             except IOError:
                 self.unimportedFiles.append(filename)
+
                 print('The following file is not an image type:', filename)
+            
+            self.progress += (1 / self.size_of_directory)
+            self.progressBar.setValue(math.ceil(round(self.progress * 100, 3)))
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 
     def start_Button_clicked(self):
         print('Start Button Clicked')
 
     def updateMainImage(self, image):
-        self.UserImages.setPixmap(QPixmap(image).scaled(701, 411, QtCore.Qt.KeepAspectRatio))
+        self.main_imageLabel.setPixmap(QPixmap(image))
+        # if self.main_imageLabel.width() > self.WINDOW_WIDTH and self.main_imageLabel.height() > self.WINDOW_HEIGHT:
+        #    self.resize(self.main_imageLabel.width(),self.main_imageLabel.height())
 
 class Ui_Train(QtGui.QMainWindow):
     imgs = []
@@ -147,6 +200,8 @@ class Ui_Train(QtGui.QMainWindow):
         super(Ui_Train, self).__init__(parent)
         self.setWindowTitle(("Train"))
         self.setGeometry(200, 200, 900, 600)
+        self.WINDOW_WIDTH = 900
+        self.WINDOW_HEIGHT = 600
 
         self.importedFiles = ImageData(self.imgs)
 
@@ -171,38 +226,56 @@ class Ui_Train(QtGui.QMainWindow):
         self.finish_Button.setGeometry(QtCore.QRect(395, 450, 97, 27))
         self.finish_Button.clicked.connect(self.close)
         
-        self.left_UserImages = QtGui.QLabel(self)
-        self.left_UserImages.setGeometry(QtCore.QRect(25, 40, 400, 350))
-        self.left_UserImages.setObjectName(("left_UserImages"))
+        self.left_imageLabel = QtGui.QLabel(self)
+        self.leftImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+        self.left_imageLabel.setGeometry(QtCore.QRect(25, 40, 400, 350))
+        self.left_imageLabel.setObjectName(("left_imageLabel"))
         
-        self.right_UserImages = QtGui.QLabel(self)
-        self.right_UserImages.setGeometry(QtCore.QRect(450, 40, 400, 350))
-        self.right_UserImages.setObjectName(("left_UserImages"))
+        self.right_imageLabel = QtGui.QLabel(self)
+        self.rightImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+        self.right_imageLabel.setGeometry(QtCore.QRect(450, 40, 400, 350))
+        self.right_imageLabel.setObjectName(("left_imageLabel"))
 
         # Initially display Train screen with two random pictures.
-        self.left_UserImages.setPixmap(QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
-        self.left_UserImages.setAlignment(QtCore.Qt.AlignCenter)
+        self.left_imageLabel.setPixmap(self.leftImage)
+        self.left_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.right_UserImages.setPixmap(QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
-        self.right_UserImages.setAlignment(QtCore.Qt.AlignCenter)
+        self.right_imageLabel.setPixmap(self.rightImage)
+        self.right_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.show()
     
     def left_Button_clicked(self):
         print('Left Button Clicked') 
-        self.leftImage = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
-        self.left_UserImages.setPixmap(QPixmap(self.leftImage).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
-        self.left_UserImages.setAlignment(QtCore.Qt.AlignCenter)
-        print "Left Image is " + self.leftImage
-        # Some images are not printing. Fix all image types
+        self.updated_leftImage = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
+        self.leftImage = QPixmap(self.updated_leftImage)
+        im = Image.open(open(self.updated_leftImage, 'rb'))
+        im.show()
+        if self.leftImage.width() > self.WINDOW_WIDTH and self.leftImage.height() > self.WINDOW_HEIGHT:
+            
+            # If a file is too big to be seen, allow the user to open the image in a new screen. If they don't want to,
+            # the image will be scaled anyway. However, some resolution will be lost.
+            # im.show()
+            self.leftImage = QPixmap(self.updated_leftImage).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+
+        self.left_imageLabel.setPixmap(QPixmap(self.leftImage))
+        self.left_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+        # print "Left Image is " + self.updated_leftImage
+        # Some images are not printing. This is probably a PyQt error since they can be im.show() correctly.
+        # Fix all image types
+        # https://stackoverflow.com/questions/10477075/pyqt4-jpeg-jpg-unsupported-image-format
 
 
     def right_Button_clicked(self):
         print('Right Button Clicked')
-        self.rightImage = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
-        self.right_UserImages.setPixmap(QPixmap(self.rightImage).scaled(300, 300, QtCore.Qt.KeepAspectRatio))
-        self.right_UserImages.setAlignment(QtCore.Qt.AlignCenter)
-        print "Right Image is " + self.rightImage
+        self.rightImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
+        self.right_imageLabel.setPixmap(QPixmap(self.rightImage))
+
+        if self.rightImage.width() > self.WINDOW_WIDTH and self.rightImage.height() > self.WINDOW_HEIGHT:
+           self.resize(self.rightImage.width(),self.rightImage.height())
+
+        self.right_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+        # print "Right Image is " + self.rightImage
         # Some images are not printing. Fix all image types
 
     def finish_Button_clicked(self):
@@ -227,7 +300,7 @@ class ImageData:
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
     # Force the style to be the same on all OSs: https://stackoverflow.com/questions/48256772/dark-theme-for-in-qt-widgets
-    app.setStyle("Fusion")
+    # app.setStyle("Fusion")
 
     # Now use a palette to switch to dark colors:
     palette = QPalette()
@@ -237,7 +310,7 @@ if __name__ == "__main__":
     palette.setColor(QPalette.AlternateBase, QColor(53, 53, 53))
     palette.setColor(QPalette.ToolTipBase, Qt.white)
     palette.setColor(QPalette.ToolTipText, Qt.white)
-    palette.setColor(QPalette.Text, Qt.white)
+    # palette.setColor(QPalette.Text, Qt.white)
     palette.setColor(QPalette.Button, QColor(53, 53, 53))
     palette.setColor(QPalette.ButtonText, Qt.white)
     palette.setColor(QPalette.BrightText, Qt.red)
