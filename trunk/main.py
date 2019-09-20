@@ -39,12 +39,25 @@ class Ui_Selekti(QtGui.QMainWindow):
         super(Ui_Selekti, self).__init__(parent)
         self.setWindowTitle(("Selekti"))
         self.WINDOW_WIDTH = 900
-        self.WINDOW_HEIGHT = 600
+        self.WINDOW_HEIGHT = 630
         self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         
-        self.progressBar = QtGui.QProgressBar(self)
-        self.progressBar.setGeometry(QtCore.QRect(20, 520, 801, 21))
-        self.progressBar.setVisible(False)
+        self.current_directory_label = QtGui.QLabel(self)
+        self.current_directory_label.setGeometry(QtCore.QRect(20, 510, 801, 21))
+        self.current_directory_label.setVisible(False)
+
+        self.sub_directories_label = QtGui.QLabel(self)
+        self.sub_directories_label.setText("Welcome To Python GUI sub")
+        self.sub_directories_label.setGeometry(QtCore.QRect(20, 560, 801, 21))
+        self.sub_directories_label.setVisible(False)
+
+        self.current_directory_progressBar = QtGui.QProgressBar(self)
+        self.current_directory_progressBar.setGeometry(QtCore.QRect(20, 530, 801, 21))
+        self.current_directory_progressBar.setVisible(False)
+
+        self.sub_directories_progressBar = QtGui.QProgressBar(self)
+        self.sub_directories_progressBar.setGeometry(QtCore.QRect(20, 580, 801, 21))
+        self.sub_directories_progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
         self.start_Button.setEnabled(False)
@@ -118,8 +131,8 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.instructions_msg.setWindowTitle("How to Get Started")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
-             
-    def browse_Button_clicked(self, firstImage):
+
+    def browse_Button_clicked(self):
 
         # Reads in the directory
         if os.path.getsize("browse_cache.txt"):
@@ -131,14 +144,18 @@ class Ui_Selekti(QtGui.QMainWindow):
         else:
             # This is the user's first time choosing a directory
             self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
- 
-        self.browsing_cache = open("browse_cache.txt","w")
-        self.browsing_cache.writelines(self.selected_directory)
-        self.browsing_cache.close() 
 
-        self.train_Button.setEnabled(False)
-        self.start_Button.setEnabled(False)
-        self.progressBar.setVisible(True)
+        if not self.selected_directory:
+            raise Exception('Exception in browse_Button_clicked: self.selected_directory was read as an empty string. This may be because you did not select a directory.')
+        else:
+            self.browsing_cache = open("browse_cache.txt","w")
+            self.browsing_cache.writelines(self.selected_directory)
+            self.browsing_cache.close() 
+            
+            self.train_Button.setEnabled(False)
+            self.start_Button.setEnabled(False)
+            self.current_directory_progressBar.setVisible(True)
+            self.sub_directories_progressBar.setVisible(True)
 
         # clears the cache
         self.directory_contents = None
@@ -146,44 +163,75 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.unimportedFiles.clear()
 
         self.directory_contents = os.listdir(self.selected_directory)
-        self.size_of_directory = len(self.directory_contents)
         self.isMainImageUpdated = False
-
-        self.progress = 0
-        self.progressBar.setValue(self.progress)
-
-        if not self.selected_directory:
-            raise Exception('Exception in browse_Button_clicked: self.selected_directory was read as an empty string: {}'.format(self.selected_directory))
         
-        if self.size_of_directory == 0:
-            raise Exception('Exception in browse_Button_clicked: Directory chosen is empty: {}'.format(self.self.size_of_directory))
-
+        self.current_directory_progress = 0
+        self.sub_directory_progress = 0
+        self.current_directory_progressBar.setValue(self.current_directory_progress)
+        self.sub_directories_progressBar.setValue(self.sub_directory_progress)
+        
+        self.current_directory_label.setText("Importing Files from " + self.selected_directory)
+        self.current_directory_label.setVisible(True)
+        self.size_of_selected_directory = len(os.listdir(self.selected_directory))
+        
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
-        for filename in self.directory_contents:
-            fullpath = self.selected_directory + '/' + filename
+        self.size_of_current_directory = 0
+        self.all_files_in_directory = []
+        # Go through and calculate the size of the directory for the progress bar
+        for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
+            self.all_files_in_directory.append(files)
 
-            try:
-                # Attempts to open image. May need to adjust to work with more image file types.
-                im = Image.open(open(fullpath, 'rb'))
-                im.close()
-                self.importedFiles.append(fullpath)
+        self.size_of_current_directory = len(self.all_files_in_directory)
+        self.num_images_uploaded = 0
 
-                if(self.isMainImageUpdated == False):
-                    print(fullpath)
-                    self.isMainImageUpdated = True 
-                    self.updateMainImage(self.importedFiles[0])
-
-                    self.train_Button.setEnabled(True)
-                    self.start_Button.setEnabled(True)
-
-            except IOError:
-                self.unimportedFiles.append(filename)
-
-                print('The following file is not an image type:', filename)
+        for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             
-            self.progress += (1 / self.size_of_directory)
-            self.progressBar.setValue(math.ceil(round(self.progress * 100, 3)))
-        print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            # Value resets since we are searching through a new directory each time
+            self.sub_directory_progress = 0
+            self.size_of_sub_directory = len(os.listdir(root))
+            self.sub_directories_progressBar.setValue(self.sub_directory_progress)
+ 
+            # Go through all subdirectories and import files
+            if self.size_of_sub_directory == 0:
+                print('Sub-directory chosen is empty. Moving on to the next one: ' + root)
+            else:
+                for filename in files:
+                    fullpath = root + '/' + filename
+                    try:
+                        # Attempts to open image. May need to adjust to work with more image file types.
+                        im = Image.open(open(fullpath, 'rb'))
+                        im.close()
+                        self.importedFiles.append(fullpath)
+                        self.num_images_uploaded += 1;
+
+                        if(self.isMainImageUpdated == False):
+                            print(self.isMainImageUpdated)
+                            self.isMainImageUpdated = True 
+                            self.updateMainImage(self.importedFiles[0])
+                
+                    except IOError:
+                        self.unimportedFiles.append(fullpath)
+                        # print('The following file is not an image type:', files)
+
+                    self.sub_directory_progress += (1 / self.size_of_sub_directory)
+                    self.sub_directories_progressBar.setValue(math.ceil(round(self.sub_directory_progress * 100, 3)))
+                    self.sub_directories_label.setText("Importing Files from: " + root)
+                    self.sub_directories_label.setVisible(True)
+                    
+            print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+            self.current_directory_progress += (1 / self.size_of_current_directory)
+            self.current_directory_progressBar.setValue(math.ceil(round(self.current_directory_progress * 100, 3)))
+        
+        if math.ceil(round(self.current_directory_progress * 100, 3)) == 100:
+            self.train_Button.setEnabled(True)
+            self.start_Button.setEnabled(True)
+            self.current_directory_label.setText("Completed Importing Files from: " + self.selected_directory)
+            self.sub_directories_label.setText("Completed Importing Files from: " + root)
+            self.current_directory_progressBar.setValue(math.ceil(100))
+            self.sub_directories_progressBar.setValue(math.ceil(100))
+        else:
+            raise Exception('Exception in browse_Button_clicked: current directory progressBar value calculated incorrectly: {}'.format(math.ceil(round(self.current_directory_progress * 100, 3))))
+
 
     def start_Button_clicked(self):
         print('Start Button Clicked')
