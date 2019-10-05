@@ -22,12 +22,14 @@ else:
 	os.mkdir(dstTrain)
 
 ratedImages = []
+print("Please rate the following images from 1 - 10\nType 0 (zero) to exit\n")
+
 for imagePath in imagePaths:
 	img = Image.open(imagePath)
 	# If you want to show the image
 	# img.show()
 
-	score = int(input("Please rate the image from 1 - 10\nType 0 (zero) to exit\n"))
+	score = int(input("{}:\t".format(imagePath)))
 
 	if score == 0:
 		break
