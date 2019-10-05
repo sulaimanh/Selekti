@@ -21,10 +21,13 @@ else:
 	os.mkdir(dstCSV)
 
 
-ratedImages = []
+ratedImages = []  
 scoreList = []
+print("Please rate the following images from 1 - 10\nType 0 (zero) to exit\n")
+
 for imagePath in imagePaths:
-	score = int(input("Please rate the image from 1 - 10\nType 0 (zero) to exit\n"))
+
+	score = int(input("{}:\t".format(imagePath)))
 
 	if score == 0:
 		break
