@@ -4,7 +4,7 @@ import os
 
 # initialize the path to the *original* input directory of images
 # We will change this to the directory the user chose.
-ORIG_INPUT_DATASET = "images"
+ORIG_INPUT_DATASET = "output"
 
 # initialize the base path to the *new* directory that will contain
 # our images after computing the training and testing split
