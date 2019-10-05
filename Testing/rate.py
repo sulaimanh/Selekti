@@ -10,46 +10,56 @@ from PIL import Image
 p = os.path.sep.join([config.ORIG_INPUT_DATASET, "all-images"])
 imagePaths = list(paths.list_images(p))
 
-csvPath = os.path.sep.join(["output","personalized_features.csv"])
-csv = open(csvPath, "w")
-
-dstTest = "output/test/"
-dstTrain = "output/train/"
+dstTest = "output/testing/"
+dstTrain = "output/training/"
+dstCSV = "output/csv"
 if os.path.exists(dstTest):
 	print("Directory exists")
 else:
 	os.mkdir(dstTest)
 	os.mkdir(dstTrain)
+	os.mkdir(dstCSV)
 
-ratedImages = []
+
+ratedImages = []  
+scoreList = []
 print("Please rate the following images from 1 - 10\nType 0 (zero) to exit\n")
 
 for imagePath in imagePaths:
-	img = Image.open(imagePath)
-	# If you want to show the image
-	# img.show()
 
 	score = int(input("{}:\t".format(imagePath)))
 
 	if score == 0:
 		break
-		
-	csv.write("{}, {}\n".format(score, imagePath))
 
+	scoreList.append(score)
 	ratedImages.append(imagePath)
 
-csv.close()
 
 
-
+# For training
 size = len(ratedImages)
 train = int((3/4) * size)
 test = size - train
-counter = 1
-for image in ratedImages:
-	# Separating the test and training images
-	if counter > train:
-		shutil.copy(image, dstTest)
-	else:
-		shutil.copy(image, dstTrain)
-	counter = counter + 1
+
+training = ratedImages[:train]
+trainingScore = scoreList[:train]
+
+csvPath = os.path.sep.join(["output", "csv", "training-personalized_features.csv"])
+csv = open(csvPath, "w")
+for (image,score) in zip(training,trainingScore):
+	shutil.copy(image, dstTrain)
+	csv.write("{},{}\n".format(score, image))
+csv.close()
+
+
+# For testing
+testing = ratedImages[train:]
+testingScore = scoreList[train:]
+
+csvPath = os.path.sep.join(["output", "csv", "testing-personalized_features.csv"])
+csv = open(csvPath, "w")
+for (image,score) in zip(testing,testingScore):
+	shutil.copy(image, dstTest)
+	csv.write("{},{}\n".format(score, image))
+csv.close()
