@@ -52,20 +52,27 @@ print("[INFO] loading data...")
 (testX, testY) = load_data_split(testingPath)
 
 # train the model
-# TODO: Load model's weights if there was previous training
 print("[INFO] training model...")
-model = SGDRegressor(loss='huber',		#TODO: Change to Ridge or SVR because we'll have less than 100K samples
-                      penalty='l2', 
-                      alpha=0.0001, 
-                      fit_intercept=False, 
-                      n_iter=5, 
-                      shuffle=True, 
-                      verbose=1, 
-                      epsilon=0.1, 
-                      random_state=42, 
-                      learning_rate='invscaling', 
-                      eta0=0.01, 
-                      power_t=0.5)
+
+if os.path.isfile(config.MODEL_PATH):
+	model_file = open(config.MODEL_PATH, 'rb')
+	model = pickle.load(model_file)
+	model_file.close()
+	print("[INFO] Using existing model.")
+else:
+	model = SGDRegressor(loss='huber',		#TODO: Change to Ridge or SVR because we'll have less than 100K samples
+						penalty='l2', 
+						alpha=0.0001, 
+						fit_intercept=False, 
+						n_iter=5, 
+						shuffle=True, 
+						verbose=1, 
+						epsilon=0.1, 
+						random_state=42, 
+						learning_rate='invscaling', 
+						eta0=0.01, 
+						power_t=0.5)
+	print("[INFO] Using new model.")
 
 sc = StandardScaler()
 
