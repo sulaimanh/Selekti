@@ -40,11 +40,11 @@ def load_data_split(splitPath):
 
 # derive the paths to the training and testing CSV files
 # output/training.csv
-trainingPath = os.path.sep.join([config.BASE_CSV_PATH,
-	"{}".format(config.TRAIN) + "_features.csv"])
+trainingPath = os.path.sep.join([config.BASE_CSV_PATH, "csv",
+	"{}-extract-features.csv".format(config.TRAIN)])
 # output/testing.csv
-testingPath = os.path.sep.join([config.BASE_CSV_PATH,
-	"{}".format(config.TEST) + "_features.csv"])
+testingPath = os.path.sep.join([config.BASE_CSV_PATH, "csv",
+	"{}-extract-features.csv".format(config.TEST)])
 
 # load the data from disk
 print("[INFO] loading data...")
