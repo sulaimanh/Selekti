@@ -4,7 +4,7 @@ import os
 class Score:
     """ Holds the dict of image IDs and average scores."""
     def __init__(self, method):
-        personalized_features = open("output/csv/" + method + "-personalized_features.csv", "r")
+        personalized_features = open("output/csv/" + method + "-personalized-ratings.csv", "r")
         self._scores = {}
         for row in personalized_features:
             row = row.strip().split(",")
