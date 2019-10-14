@@ -26,21 +26,20 @@ def computeAverage(scores):
     return sum / numScorersTotal
 
 class Score:
-    """ Holds the dict of image IDs and average scores."""
+    """ Holds list of image scores."""
     def __init__(self):
         AVA_dataset = open("AVA_dataset/AVA.txt", "r")
 
-        self._scores = {}
+        self._scores = []
         for line in AVA_dataset:
             dataFields = line.split(" ")
 
             # AVA.txt is organized by 15 columns (delimited by spaces). The second column of each line
             # stores the image ID. Columns 3 through 12 store counts of "aesthetic ratings" (scores).
             # For example, column 3 has counts of score 1 and column 12 has counts of score 10.
-            ID = dataFields[1]
             avg = computeAverage(list(map((int), dataFields[2:12])))
 
-            self._scores[ID] = avg
+            self._scores.append(avg)
 
         AVA_dataset.close()
 
