@@ -46,7 +46,7 @@ test = size - train
 training = ratedImages[:train]
 trainingScore = scoreList[:train]
 
-csvPath = os.path.sep.join(["output", "csv", "training-personalized_features.csv"])
+csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv", "training-personalized-features.csv"])
 csv = open(csvPath, "w")
 for (image,score) in zip(training,trainingScore):
 	shutil.copy(image, dstTrain)
@@ -58,7 +58,7 @@ csv.close()
 testing = ratedImages[train:]
 testingScore = scoreList[train:]
 
-csvPath = os.path.sep.join(["output", "csv", "testing-personalized_features.csv"])
+csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv", "testing-personalized-features.csv"])
 csv = open(csvPath, "w")
 for (image,score) in zip(testing,testingScore):
 	shutil.copy(image, dstTest)

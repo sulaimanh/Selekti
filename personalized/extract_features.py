@@ -39,8 +39,8 @@ for split in (config.TRAIN, config.TEST):
 
 	# open the output CSV file for writing
 	# We are going to extract the features and write them in here
-	csvPath = os.path.sep.join([config.BASE_CSV_PATH,
-		"{}_features.csv".format(split)])
+	csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv",
+		"{}-extract-features.csv".format(split)])
 	csv = open(csvPath, "w")
 
 	# loop over the images in batches
