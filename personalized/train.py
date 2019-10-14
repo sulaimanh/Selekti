@@ -1,6 +1,7 @@
 # import the necessary packages
 from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import explained_variance_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
 import config
@@ -32,7 +33,7 @@ def load_data_split(splitPath):
 	# convert the data and scores to NumPy arrays
 	# We append the feature vector and label to the data and scores list.
 	data = np.array(data)
-	scores = np.array(scores)
+	scores = [float(s) for s in scores]
 
 	# return a tuple of the data and scores
 	return (data, scores)
@@ -40,10 +41,10 @@ def load_data_split(splitPath):
 # derive the paths to the training and testing CSV files
 # output/training.csv
 trainingPath = os.path.sep.join([config.BASE_CSV_PATH,
-	"{}.csv".format(config.TRAIN)])
+	"{}".format(config.TRAIN) + "_features.csv"])
 # output/testing.csv
 testingPath = os.path.sep.join([config.BASE_CSV_PATH,
-	"{}.csv".format(config.TEST)])
+	"{}".format(config.TEST) + "_features.csv"])
 
 # load the data from disk
 print("[INFO] loading data...")
@@ -52,18 +53,26 @@ print("[INFO] loading data...")
 
 # train the model
 print("[INFO] training model...")
-model = SGDRegressor(loss='huber',
-                      penalty='l2', 
-                      alpha=0.0001, 
-                      fit_intercept=False, 
-                      n_iter=5, 
-                      shuffle=True, 
-                      verbose=1, 
-                      epsilon=0.1, 
-                      random_state=42, 
-                      learning_rate='invscaling', 
-                      eta0=0.01, 
-                      power_t=0.5)
+
+if os.path.isfile(config.MODEL_PATH):
+	model_file = open(config.MODEL_PATH, 'rb')
+	model = pickle.load(model_file)
+	model_file.close()
+	print("[INFO] Using existing model.")
+else:
+	model = SGDRegressor(loss='huber',		#TODO: Change to Ridge or SVR because we'll have less than 100K samples
+						penalty='l2', 
+						alpha=0.0001, 
+						fit_intercept=False, 
+						n_iter=5, 
+						shuffle=True, 
+						verbose=1, 
+						epsilon=0.1, 
+						random_state=42, 
+						learning_rate='invscaling', 
+						eta0=0.01, 
+						power_t=0.5)
+	print("[INFO] Using new model.")
 
 sc = StandardScaler()
 
@@ -76,7 +85,16 @@ model.fit(trainX, trainY)
 print("[INFO] evaluating...")
 preds = model.predict(testX)
 
-print("[INFO] Mean absolute error: {}".format(mean_absolute_error(testY, preds)))
+# Some predictions came out negative... How do we tell the model to predict within the 1 - 10 range?
+
+# Verify the data types inside these babies
+# print("[INFO] testY: {}".format(testY))
+# print("[INFO] preds: {}".format(preds))
+
+print("[INFO] Mean absolute error: {}".format(mean_squared_error(testY, preds)))
+print("[INFO] Explained variance score: {}".format(explained_variance_score(testY, preds)))
+# TODO: Update model based on error
+
 
 
 # serialize the model to disk

@@ -12,12 +12,17 @@ imagePaths = list(paths.list_images(p))
 dstTest = "output/testing/"
 dstTrain = "output/training/"
 dstCSV = "output/csv"
+
+# When training a new set of images in the all-images folder,
+# its necessary to discard the previous images
 if os.path.exists(dstTest):
-	print("Directory exists")
-else:
-	os.mkdir(dstTest)
-	os.mkdir(dstTrain)
-	os.mkdir(dstCSV)
+	shutil.rmtree(dstTest)
+	shutil.rmtree(dstTrain)
+	shutil.rmtree(dstCSV)
+
+os.mkdir(dstTest)
+os.mkdir(dstTrain)
+os.mkdir(dstCSV)
 
 
 ratedImages = []
