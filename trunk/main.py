@@ -12,6 +12,8 @@ from PyQt4 import *
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from PIL import Image
+from handlers.model_builder import Nima
+from handlers.data_generator import TestDataGenerator
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -139,7 +141,8 @@ class Ui_Selekti(QtGui.QMainWindow):
             # Revisit previous directory
             self.browsing_cache = open("browse_cache.txt","r+")
             self.previous_directory = self.browsing_cache.readline()
-            self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', self.previous_directory, QtGui.QFileDialog.ShowDirsOnly)            
+            self.selected_directory = QtGui.QFileDialog.getExistingDirectory(None, 'Select a folder:', self.previous_directory, QtGui.QFileDialog.ShowDirsOnly)     
+            print(self.selected_directory)       
             self.browsing_cache.close()
         else:
             # This is the user's first time choosing a directory
@@ -235,6 +238,36 @@ class Ui_Selekti(QtGui.QMainWindow):
 
     def start_Button_clicked(self):
         print('Start Button Clicked')
+        # build model and load weights
+        nima = Nima("MobileNet", weights=None)
+        nima.build()
+        nima.nima_model.load_weights("weights_mobilenet_aesthetic_0.07.hdf5")
+
+        self.samples = []
+        for img_path in self.importedFiles:
+            print(img_path)
+            self.importedFiles_id = os.path.basename(img_path).split('.')[0]
+            self.samples.append({'image_id': self.importedFiles_id})
+        
+        for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
+
+            # Go through all subdirectories and import files
+            if len(os.listdir(root)) == 0:
+                print('Sub-directory chosen is empty. Moving on to the next one: ' + root)
+            else:
+                for filename in files:
+                    try:
+                        # initialize data generator
+                        data_generator = TestDataGenerator(self.samples, self.selected_directory, 64, 10, nima.preprocessing_function(), img_format='jpg')
+                        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+                        print(img_path)
+                        print(self.selected_directory)
+                        predictions = nima.nima_model.predict_generator(data_generator, workers=8, use_multiprocessing=True, verbose=1)
+                        print("------------------------\n")
+                        print(predictions)
+                    except IOError:
+                        print("Error processing images.")
+        print("Congratulations")
 
     def updateMainImage(self, image):
         self.main_imageLabel.setPixmap(QPixmap(image))
