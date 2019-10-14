@@ -15,9 +15,9 @@ and see how precise the PM's predictions are:
 	
 	These files will be made too:
 	
-		output/csv/training-personalized_features.csv
+		output/csv/training-personalized-ratings.csv
 	
-		output/csv/testing-personalized_features.csv
+		output/csv/testing-personalized-ratings.csv
 	
 	
 	
@@ -29,9 +29,9 @@ and see how precise the PM's predictions are:
 	
 3. Run extract_features.py. The following files will be made:
 
-		output/training_features.csv
+		output/csv/training-extract-features.csv
 	
-		output/testing_features.csv	
+		output/csv/testing-extract-features.csv	
 	
 	
 	
