@@ -95,7 +95,6 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.main_imageLabel = QtGui.QLabel(self)
         self.mainImage = QPixmap("Selekti.png")
         self.main_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
-        self.main_imageLabel.setObjectName(("main_imageLabel"))
         self.main_imageLabel.setPixmap(self.mainImage)
         # if self.mainImage.width() > self.WINDOW_WIDTH and self.mainImage.height() > self.WINDOW_HEIGHT:
         #     self.resize(self.mainImage.width(),self.mainImage.height())
@@ -127,7 +126,7 @@ class Ui_Selekti(QtGui.QMainWindow):
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
         self.instructions_msg.setText("How to Get Started:")
-        self.instructions_msg.setInformativeText("This software is used to compare images to distinguish which are more aesthetically pleasing to the user. \n\n1. To begin, start by selecting a directory filled with images you would like to use. These will be used to train the algorithm as well as sort out good images from the bad ones.\n\n2. Select 'Train' and begin training the algorithm by choosing which photo is better out of the two given. The more feedback you give, the more the algorithm learns.\n\n3. Once you are done, return to the main screen and press 'Start'. The algorithm will begin processing each photo and put the results in a new directory.")
+        self.instructions_msg.setInformativeText("This software is used to compare images to distinguish which are more aesthetically pleasing to the user. \n\n1. To begin, start by selecting a directory filled with images you would like to use. These will be used to train the algorithm as well as sort out good images from the bad ones.\n\n2. Select 'Train' and begin training the algorithm by dragging the slider to rate the image. The more feedback you give, the more the algorithm learns.\n\n3. Once you are done, return to the main screen and press 'Start'. The algorithm will begin processing each photo and put the results in a new directory.")
         self.instructions_msg.setWindowTitle("How to Get Started")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
@@ -205,13 +204,12 @@ class Ui_Selekti(QtGui.QMainWindow):
                         self.num_images_uploaded += 1;
 
                         if(self.isMainImageUpdated == False):
-                            print(self.isMainImageUpdated)
                             self.isMainImageUpdated = True 
                             self.updateMainImage(self.importedFiles[0])
                 
                     except IOError:
                         self.unimportedFiles.append(fullpath)
-                        # print('The following file is not an image type:', files)
+                        print('\nThe following file(s) is not an image type: ', files)
 
                     self.sub_directory_progress += (1 / self.size_of_sub_directory)
                     self.sub_directories_progressBar.setValue(math.ceil(round(self.sub_directory_progress * 100, 3)))
@@ -223,8 +221,17 @@ class Ui_Selekti(QtGui.QMainWindow):
             self.current_directory_progressBar.setValue(math.ceil(round(self.current_directory_progress * 100, 3)))
         
         if math.ceil(round(self.current_directory_progress * 100, 3)) == 100:
-            self.train_Button.setEnabled(True)
-            self.start_Button.setEnabled(True)
+            if len(self.importedFiles) != 0:
+                # Only enables the train and start button if there are any images imported
+                self.train_Button.setEnabled(True)
+                self.start_Button.setEnabled(True)
+            else:
+                # If the user imported a directory before and updated the ui main image,
+                # they shouldn't see the image from the last import
+                self.mainImage = QPixmap("Selekti.png")
+                self.main_imageLabel.setPixmap(self.mainImage)
+                self.main_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+
             self.current_directory_label.setText("Completed Importing Files from: " + self.selected_directory)
             self.sub_directories_label.setText("Completed Importing Files from: " + root)
             self.current_directory_progressBar.setValue(math.ceil(100))
@@ -246,10 +253,10 @@ class Ui_Train(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
-        self.setWindowTitle(("Train"))
-        self.setGeometry(200, 200, 900, 600)
+        self.setWindowTitle(("Train"))   
         self.WINDOW_WIDTH = 900
-        self.WINDOW_HEIGHT = 600
+        self.WINDOW_HEIGHT = 630
+        self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
 
         self.importedFiles = ImageData(self.imgs)
 
@@ -261,70 +268,84 @@ class Ui_Train(QtGui.QMainWindow):
         # Menu selections that show on the menubar on the Selekti screen
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
-
-        self.left_Button = QtGui.QPushButton('Left is better', self)
-        self.left_Button.setGeometry(QtCore.QRect(150, 400, 110, 30))
-        self.left_Button.clicked.connect(self.left_Button_clicked)
-
-        self.right_Button = QtGui.QPushButton('Right is better', self)
-        self.right_Button.setGeometry(QtCore.QRect(600, 400, 110, 30))
-        self.right_Button.clicked.connect(self.right_Button_clicked)
         
+        self.rate_Button = QtGui.QPushButton('Rate', self)
+        self.rate_Button.setGeometry(QtCore.QRect(400, 510, 100, 30))
+        self.rate_Button.clicked.connect(self.rate_Button_clicked)
+
+        self.skip_Button = QtGui.QPushButton('Skip', self)
+        self.skip_Button.setGeometry(QtCore.QRect(250, 510, 100, 30))
+        self.skip_Button.clicked.connect(self.skip_Button_clicked)
+    
+        self.title_label = QtGui.QLabel(self)
+        self.title_label.setText("What do you think of this photo?")
+        self.title_label.setGeometry(QtCore.QRect(350, 30, 300, 30))
+
+        self.rate_label = QtGui.QLabel(self)
+        self.rate_label.setText("What do you think of this photo?")
+        self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
+        self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+
+        self.rate_Slider = QSlider(Qt.Horizontal, self)
+        self.rate_Slider.setGeometry(QtCore.QRect(100, 480, 700, 30))
+        self.rate_Slider.setMinimum(1)
+        self.rate_Slider.setMaximum(10)
+        self.rate_Slider.setValue(0)
+        self.rate_Slider.setTickPosition(QSlider.TicksBelow)
+        self.rate_Slider.setTickInterval(1)
+        self.rate_Slider.valueChanged[int].connect(self.on_rate_value_changed)
+
         self.finish_Button = QtGui.QPushButton('Finish', self)
-        self.finish_Button.setGeometry(QtCore.QRect(395, 450, 97, 27))
+        self.finish_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
         self.finish_Button.clicked.connect(self.close)
-        
-        self.left_imageLabel = QtGui.QLabel(self)
-        self.leftImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
-        self.left_imageLabel.setGeometry(QtCore.QRect(25, 40, 400, 350))
-        self.left_imageLabel.setObjectName(("left_imageLabel"))
-        
-        self.right_imageLabel = QtGui.QLabel(self)
-        self.rightImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
-        self.right_imageLabel.setGeometry(QtCore.QRect(450, 40, 400, 350))
-        self.right_imageLabel.setObjectName(("left_imageLabel"))
 
-        # Initially display Train screen with two random pictures.
-        self.left_imageLabel.setPixmap(self.leftImage)
-        self.left_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
-
-        self.right_imageLabel.setPixmap(self.rightImage)
-        self.right_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.train_imageLabel = QtGui.QLabel(self)
+        self.trainImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)])
+        self.train_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
+        self.train_imageLabel.setPixmap(QPixmap(self.trainImage))
+        self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.show()
-    
-    def left_Button_clicked(self):
-        print('Left Button Clicked') 
-        self.updated_leftImage = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
-        self.leftImage = QPixmap(self.updated_leftImage)
-        im = Image.open(open(self.updated_leftImage, 'rb'))
-        im.show()
-        if self.leftImage.width() > self.WINDOW_WIDTH and self.leftImage.height() > self.WINDOW_HEIGHT:
-            
-            # If a file is too big to be seen, allow the user to open the image in a new screen. If they don't want to,
-            # the image will be scaled anyway. However, some resolution will be lost.
-            # im.show()
-            self.leftImage = QPixmap(self.updated_leftImage).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
 
-        self.left_imageLabel.setPixmap(QPixmap(self.leftImage))
-        self.left_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
-        # print "Left Image is " + self.updated_leftImage
-        # Some images are not printing. This is probably a PyQt error since they can be im.show() correctly.
-        # Fix all image types
-        # https://stackoverflow.com/questions/10477075/pyqt4-jpeg-jpg-unsupported-image-format
+    def skip_Button_clicked(self):
+        self.updated_image = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
+        self.trainImage = QPixmap(self.updated_image)
+        im = Image.open(open(self.updated_image, 'rb'))
 
+        self.train_imageLabel.setPixmap(QPixmap(self.trainImage))
+        self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-    def right_Button_clicked(self):
-        print('Right Button Clicked')
-        self.rightImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]).scaled(300, 300, QtCore.Qt.KeepAspectRatio)
-        self.right_imageLabel.setPixmap(QPixmap(self.rightImage))
+    def rate_Button_clicked(self): 
+        self.updated_image = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
+        self.trainImage = QPixmap(self.updated_image)
+        im = Image.open(open(self.updated_image, 'rb'))
 
-        if self.rightImage.width() > self.WINDOW_WIDTH and self.rightImage.height() > self.WINDOW_HEIGHT:
-           self.resize(self.rightImage.width(),self.rightImage.height())
+        self.train_imageLabel.setPixmap(QPixmap(self.trainImage))
+        self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.right_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
-        # print "Right Image is " + self.rightImage
-        # Some images are not printing. Fix all image types
+    def on_rate_value_changed(self, value):
+        # Change the label
+        if value == 1:
+            self.rate_label.setText("Worst photo I have ever seen")
+        elif value == 2:
+            self.rate_label.setText("This photo made me turn the computer off")
+        elif value == 3:
+            self.rate_label.setText("There is definitely room for improvement")
+        elif value == 4:
+            self.rate_label.setText("Not very good but not terrible")
+        elif value == 5:
+            self.rate_label.setText("Undecided. It could go either way")
+        elif value == 6:
+            self.rate_label.setText("Decent")
+        elif value == 7:
+            self.rate_label.setText("Good aesthetic qualities. Not too shabby")
+        elif value == 8:
+            self.rate_label.setText("Great photo. Would probably show a friend")
+        elif value == 9:
+            self.rate_label.setText("Absolutely stunning. Brought a tear to your eye")
+        elif value == 10:
+            self.rate_label.setText("The pinnacle of beauty")
+        self.rate_label.setVisible(True)
 
     def finish_Button_clicked(self):
         print('Finish Button Clicked')
@@ -333,7 +354,7 @@ class Ui_Train(QtGui.QMainWindow):
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
         self.instructions_msg.setText("Training the Algorithm:")
-        self.instructions_msg.setInformativeText("In order to improve the quality of the filtered images, the user can train the algorithm to give more desirable results. This can be done by comparing images and seeing which is aesthetically more pleasing to the user.\n\n1. Pick left if you think the photo on the left looks better.\n\n2. Pick right if you think the photo on the right looks better.\n\n3. Press finish when you are done training.")
+        self.instructions_msg.setInformativeText("In order to improve the quality of the filtered images, the user can train the algorithm to give more desirable results. This can be done by dragging the slider to rate the image according to the user's preference.\n\n1. Drag the slider left or right depending on how much you like/dislike the photo.\n\n2. Press the 'Rate' button to confirm your choice. If you are unsure about a certain photo, press 'Skip' to display a new photo.\n\n3. Press finish when you are done training.")
         self.instructions_msg.setWindowTitle("Training")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
