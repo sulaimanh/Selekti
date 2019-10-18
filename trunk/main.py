@@ -20,6 +20,7 @@ QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), 
 QtGui.QImageReader.supportedImageFormats()
 import random
 import math
+import glob
 
 
 # try:
@@ -249,32 +250,27 @@ class Ui_Selekti(QtGui.QMainWindow):
         nima = Nima("MobileNet", weights=None)
         nima.build()
         nima.nima_model.load_weights("weights_mobilenet_aesthetic_0.07.hdf5")
-
-        self.samples = []
-        for img_path in self.importedFiles:
-            print(img_path)
-            self.importedFiles_id = os.path.basename(img_path).split('.')[0]
-            self.samples.append({'image_id': self.importedFiles_id})
-        
+       
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
+            print("[INFO] ROOT: " + root)
 
-            # Go through all subdirectories and import files
-            if len(os.listdir(root)) == 0:
-                print('Sub-directory chosen is empty. Moving on to the next one: ' + root)
-            else:
-                for filename in files:
-                    try:
-                        # initialize data generator
-                        data_generator = TestDataGenerator(self.samples, self.selected_directory, 64, 10, nima.preprocessing_function(), img_format='jpg')
-                        print('@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-                        print(img_path)
-                        print(self.selected_directory)
-                        predictions = nima.nima_model.predict_generator(data_generator, workers=8, use_multiprocessing=True, verbose=1)
-                        print("------------------------\n")
-                        print(predictions)
-                    except IOError:
-                        print("Error processing images.")
-        print("Congratulations")
+            self.samples = []
+
+            # Only grab the jpg images
+            img_paths = glob.glob(os.path.join(root, '*.jpg'))
+
+            for img_path in img_paths:
+                print("[INFO] IMG PATH IN ROOT: " + img_path)
+                self.importedFiles_id = os.path.basename(img_path).split('.')[0]
+                self.samples.append({'image_id': self.importedFiles_id})
+
+            # initialize data generator
+            data_generator = TestDataGenerator(self.samples, root, 64, 10, nima.preprocessing_function(), img_format='jpg')
+
+            # TODO: Circumvent multiprocessing error on Windows
+            predictions = nima.nima_model.predict_generator(data_generator, workers=1, use_multiprocessing=False, verbose=1)
+            print(predictions)
+
 
     def updateMainImage(self, image):
         self.main_imageLabel.setPixmap(QPixmap(image))
