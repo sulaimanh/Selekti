@@ -14,6 +14,7 @@ from PyQt4.QtGui import *
 from PIL import Image
 from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
+from utils.utils import calc_mean_score
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -21,6 +22,8 @@ QtGui.QImageReader.supportedImageFormats()
 import random
 import math
 import glob
+import json
+import shutil
 
 
 # try:
@@ -250,6 +253,9 @@ class Ui_Selekti(QtGui.QMainWindow):
         nima = Nima("MobileNet", weights=None)
         nima.build()
         nima.nima_model.load_weights("weights_mobilenet_aesthetic_0.07.hdf5")
+
+        totalSamples = []
+        j = 0
        
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             print("[INFO] ROOT: " + root)
@@ -261,6 +267,8 @@ class Ui_Selekti(QtGui.QMainWindow):
 
             for img_path in img_paths:
                 print("[INFO] IMG PATH IN ROOT: " + img_path)
+                totalSamples.append({'image_path': img_path})
+
                 self.importedFiles_id = os.path.basename(img_path).split('.')[0]
                 self.samples.append({'image_id': self.importedFiles_id})
 
@@ -269,8 +277,46 @@ class Ui_Selekti(QtGui.QMainWindow):
 
             # TODO: Circumvent multiprocessing error on Windows
             predictions = nima.nima_model.predict_generator(data_generator, workers=1, use_multiprocessing=False, verbose=1)
-            print(predictions)
+            # print(predictions)
 
+            # calc mean scores and add to samples
+            for i, sample in enumerate(self.samples):
+                sample['mean_score_prediction'] = calc_mean_score(predictions[i])
+                totalSamples[j]['mean_score_prediction'] = calc_mean_score(predictions[i])
+                j += 1
+
+            print("[INFO] Directory specific samples:")
+            print(json.dumps(self.samples, indent=2))
+
+        # sort totalSamples by score
+        print("[INFO] Sorted (descending) Total samples:")
+        totalSamples.sort(key=lambda i: i['mean_score_prediction'], reverse=True)
+        print(json.dumps(totalSamples, indent=2))
+
+        # create new directory to hold top rated pics
+        new_dir = os.path.sep.join([self.selected_directory, "Top_pic(k)s"])
+        
+        if os.path.exists(new_dir):
+    	    shutil.rmtree(new_dir)
+
+        os.mkdir(new_dir)
+
+        # determine number of pics to copy into new dir
+        # 20% for now
+        num_to_pick = int(len(totalSamples) * 0.2)
+
+        i = 0
+        # since totalSamples is now sorted with the highest rated
+        # pics first, the loop will only copy the first 'num_to_pick' images
+        for sample in totalSamples:
+            if i == num_to_pick:
+                break
+            shutil.copy(sample['image_path'], new_dir)
+            i += 1
+
+        print("[INFO] Done copying into new dir.")
+
+        #TODO: Notify user of the new directory or open it for them 
 
     def updateMainImage(self, image):
         self.main_imageLabel.setPixmap(QPixmap(image))
