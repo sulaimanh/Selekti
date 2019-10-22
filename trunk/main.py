@@ -208,7 +208,7 @@ class Ui_Selekti(QtGui.QMainWindow):
                 print('Sub-directory chosen is empty. Moving on to the next one: ' + root)
             else:
                 for filename in files:
-                    fullpath = root + '/' + filename
+                    fullpath = os.path.sep.join([root, filename])
                     try:
                         # Attempts to open image. May need to adjust to work with more image file types.
                         im = Image.open(open(fullpath, 'rb'))
@@ -331,6 +331,14 @@ class Ui_Selekti(QtGui.QMainWindow):
 
 class Ui_Train(QtGui.QMainWindow):
     imgs = []
+    imgs_scored = []
+    imgs_unscored = []
+
+    def getRandomImage(self, imageList):
+        if not imageList:
+            return None
+        
+        return imageList[random.randint(0,len(imageList)-1)]
 
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
@@ -340,6 +348,13 @@ class Ui_Train(QtGui.QMainWindow):
         self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
 
         self.importedFiles = ImageData(self.imgs)
+
+        # Random images will be taken from imgs_unscored
+        for imgPath in self.importedFiles.images:
+            self.imgs_unscored.append({'imgPath': imgPath})
+        
+        print("[INFO] imgs_unscored:")
+        print(json.dumps(self.imgs_unscored, indent=2))
 
         self.mainMenu = self.menuBar()
         # Actions which can be seen from the drop-down of each menu selection
@@ -383,28 +398,61 @@ class Ui_Train(QtGui.QMainWindow):
         self.finish_Button.clicked.connect(self.close)
 
         self.train_imageLabel = QtGui.QLabel(self)
-        self.trainImage = QPixmap(self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)])
         self.train_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
-        self.train_imageLabel.setPixmap(QPixmap(self.trainImage))
         self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+
+        self.current_img = self.getRandomImage(self.imgs_unscored)
+        if  self.current_img == None:
+            print("[INFO] No images to score.")
+        else:
+            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            print("[INFO] Starting image was set.")
 
         self.show()
 
     def skip_Button_clicked(self):
-        self.updated_image = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
-        self.trainImage = QPixmap(self.updated_image)
-        im = Image.open(open(self.updated_image, 'rb'))
+        self.current_img = self.getRandomImage(self.imgs_unscored)
+        if  self.current_img == None:
+            print("[INFO] No image to skip.")
+        else:
+            im = Image.open(open(self.current_img['imgPath'], 'rb'))
 
-        self.train_imageLabel.setPixmap(QPixmap(self.trainImage))
-        self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+
+            print("[INFO] SKIP btn clicked. Next image should be visible.")
 
     def rate_Button_clicked(self): 
-        self.updated_image = self.importedFiles.images[random.randint(0,len(self.importedFiles.images)-1)]
-        self.trainImage = QPixmap(self.updated_image)
-        im = Image.open(open(self.updated_image, 'rb'))
 
-        self.train_imageLabel.setPixmap(QPixmap(self.trainImage))
-        self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+        if self.current_img == None:
+            print("[INFO] No image to rate.")
+            return
+
+        # Before this btn is clicked, the user has already chosen the score on the slider
+        # Therefore we can remove the current img from the unscored list
+        print("[INFO] Removing {} from imgs_unscored".format(self.current_img))
+        self.imgs_unscored.remove(self.current_img)
+
+        # Add the scored image to imgs_scored
+        imgScored = {'imgPath': self.current_img['imgPath'],
+                     'imgScore': self.rate_Slider.value()}
+        self.imgs_scored.append(imgScored)
+
+        print("[INFO] List of scored images:")
+        print(json.dumps(self.imgs_scored, indent=2))
+
+        # Move on to next pic
+        self.current_img = self.getRandomImage(self.imgs_unscored)
+        if  self.current_img == None:
+            print("[INFO] No image to rate.")
+            # TODO: Produce dialog informing user end of list acheived
+        else:
+            im = Image.open(open(self.current_img['imgPath'], 'rb'))
+
+            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+
+            print("[INFO] RATE btn clicked. Next image should be visible.")
 
     def on_rate_value_changed(self, value):
         # Change the label
