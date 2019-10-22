@@ -15,7 +15,7 @@ from PIL import Image
 from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
-from personalModel.personal_model import loadModel, saveModel
+from personalModel.personal_model import PersonalModel
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -337,7 +337,7 @@ class Ui_Train(QtGui.QMainWindow):
 
     # initialize personal model
     modelPath = os.path.sep.join(["personalModel", "model.cpickle"])
-    model = loadModel(modelPath)
+    model = PersonalModel(modelPath)
 
     def getRandomImage(self, imageList):
         if not imageList:
@@ -484,8 +484,8 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setVisible(True)
 
     def finish_Button_clicked(self):
-        
-        saveModel(self.modelPath, self.model)
+
+        self.model.saveModel()
         print("[INFO] Model finished saving")
 
         self.deleteLater()
