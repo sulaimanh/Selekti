@@ -443,6 +443,13 @@ class Ui_Train(QtGui.QMainWindow):
                      'imgScore': self.rate_Slider.value()}
         self.imgs_scored.append(imgScored)
 
+
+        # Train the user's personal model by feeding it the feature vector
+        # of the image the user just scored, along with the score.
+        f_vec = self.model.getFeatureVector(self.current_img['imgPath'])        
+        self.model.feedModel(f_vec, imgScored['imgScore'])
+
+
         print("[INFO] List of scored images:")
         print(json.dumps(self.imgs_scored, indent=2))
 

@@ -1,14 +1,19 @@
 
+from keras.applications import VGG16
+from keras.applications import imagenet_utils
+from keras.preprocessing.image import img_to_array
+from keras.preprocessing.image import load_img
 from sklearn.linear_model import SGDRegressor
 import os
 import pickle
+import numpy as np
 
 class PersonalModel: 
     """ Use this class to load/save/train the user's personal model. """
 
     def __init__(self, fileName):
         self.modelPath = fileName
-
+        self.featureExtractor = VGG16(weights="imagenet", include_top=False)
 
         self.loadModel()
 
@@ -41,3 +46,23 @@ class PersonalModel:
         f.write(pickle.dumps(self.model))
         f.close()
 
+    def getFeatureVector(self, imgPath):
+
+        image = load_img(imgPath, target_size=(224, 224))
+        image = img_to_array(image)
+        image = np.expand_dims(image, axis=0)
+        image = imagenet_utils.preprocess_input(image)
+
+        feature_vec = self.featureExtractor.predict(image)
+        feature_vec = feature_vec.reshape((feature_vec.shape[0], 7 * 7 * 512))
+
+        return feature_vec
+
+    def feedModel(self, featVec, score):
+
+        # model.fit usually works with batches but we're gonna train 
+        # one sample at a time. So the data needs a little reshaping...
+        featVec = np.array(featVec)
+        score = np.array([score])
+
+        self.model.fit(featVec, score)
