@@ -15,6 +15,7 @@ from PIL import Image
 from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
+from personalModel.personal_model import PersonalModel
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -334,6 +335,10 @@ class Ui_Train(QtGui.QMainWindow):
     imgs_scored = []
     imgs_unscored = []
 
+    # initialize personal model
+    modelPath = os.path.sep.join(["personalModel", "model.cpickle"])
+    model = PersonalModel(modelPath)
+
     def getRandomImage(self, imageList):
         if not imageList:
             return None
@@ -395,7 +400,7 @@ class Ui_Train(QtGui.QMainWindow):
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
         self.finish_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
-        self.finish_Button.clicked.connect(self.close)
+        self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
         self.train_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
@@ -438,6 +443,13 @@ class Ui_Train(QtGui.QMainWindow):
                      'imgScore': self.rate_Slider.value()}
         self.imgs_scored.append(imgScored)
 
+
+        # Train the user's personal model by feeding it the feature vector
+        # of the image the user just scored, along with the score.
+        f_vec = self.model.getFeatureVector(self.current_img['imgPath'])        
+        self.model.feedModel(f_vec, imgScored['imgScore'])
+
+
         print("[INFO] List of scored images:")
         print(json.dumps(self.imgs_scored, indent=2))
 
@@ -479,8 +491,11 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setVisible(True)
 
     def finish_Button_clicked(self):
-        print('Finish Button Clicked')
-        self.close
+
+        self.model.saveModel()
+        print("[INFO] Model finished saving")
+
+        self.deleteLater()
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
