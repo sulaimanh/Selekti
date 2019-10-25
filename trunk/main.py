@@ -25,6 +25,11 @@ import glob
 import json
 import shutil
 
+# try:
+#     _fromUtf8 = QtCore.QString.fromUtf8
+# except AttributeError:
+#     def _fromUtf8(s):
+#         return s
 
 # try:
 #     _encoding = QtGui.QApplication.UnicodeUTF8
@@ -354,10 +359,11 @@ class Ui_Train(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
+
         self.setWindowTitle(("Train"))   
         self.WINDOW_WIDTH = 900
         self.WINDOW_HEIGHT = 630
-        self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
 
         self.importedFiles = ImageData(self.imgs)
 
@@ -413,9 +419,20 @@ class Ui_Train(QtGui.QMainWindow):
             print("[INFO] No images to score.")
         else:
             self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            self.train_imageLabel.setObjectName('train_imageLabel')
+            self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
 
         self.show()
+
+    def train_image_clicked(self, event):
+        self.maximized_window = QWidget()
+        self.maximized_image_label = QLabel()
+        self.maximized_image_label.setPixmap(QPixmap(self.current_img['imgPath']))
+        self.maximized_vbox = QVBoxLayout()
+        self.maximized_vbox.addWidget(self.maximized_image_label)
+        self.maximized_window.setLayout(self.maximized_vbox)
+        self.maximized_window.show()
 
     def skip_Button_clicked(self):
         self.current_img = self.getRandomImage(self.imgs_unscored)
@@ -434,7 +451,6 @@ class Ui_Train(QtGui.QMainWindow):
         if self.current_img == None:
             print("[INFO] No image to rate.")
             return
-
         # Before this btn is clicked, the user has already chosen the score on the slider
         # Therefore we can remove the current img from the unscored list
         print("[INFO] Removing {} from imgs_unscored".format(self.current_img))
