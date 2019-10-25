@@ -373,11 +373,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.skip_Button.setGeometry(QtCore.QRect(250, 510, 100, 30))
         self.skip_Button.clicked.connect(self.skip_Button_clicked)
     
-        self.title_label = QtGui.QLabel(self)
-        self.title_label.setText("What do you think of this photo?")
-        self.title_label.setStyleSheet("QLabel { color: white; font: 18px; }")
-        self.title_label.setGeometry(QtCore.QRect(350, 30, 300, 30))
-
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
         self.rate_label.setStyleSheet("QLabel { color: white; font: 18px; }")
