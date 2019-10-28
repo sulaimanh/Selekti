@@ -64,10 +64,12 @@ class Ui_Selekti(QtGui.QMainWindow):
 
         self.current_directory_progressBar = QtGui.QProgressBar(self)
         self.current_directory_progressBar.setGeometry(QtCore.QRect(20, 530, 801, 21))
+        self.current_directory_progressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.current_directory_progressBar.setVisible(False)
 
         self.sub_directories_progressBar = QtGui.QProgressBar(self)
         self.sub_directories_progressBar.setGeometry(QtCore.QRect(20, 580, 801, 21))
+        self.sub_directories_progressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.sub_directories_progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
