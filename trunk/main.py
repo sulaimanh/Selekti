@@ -15,7 +15,11 @@ from PIL import Image
 from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
+<<<<<<< Updated upstream
 from personalModel.personal_model import PersonalModel
+=======
+from utils.slider import Slider
+>>>>>>> Stashed changes
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -404,7 +408,7 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
-        self.rate_Slider = QSlider(Qt.Horizontal, self)
+        self.rate_Slider = Slider(Qt.Horizontal, self)
         self.rate_Slider.setGeometry(QtCore.QRect(100, 480, 700, 30))
         self.rate_Slider.setMinimum(1)
         self.rate_Slider.setMaximum(10)
