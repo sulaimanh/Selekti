@@ -15,11 +15,8 @@ from PIL import Image
 from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
-<<<<<<< Updated upstream
 from personalModel.personal_model import PersonalModel
-=======
 from utils.slider import Slider
->>>>>>> Stashed changes
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
