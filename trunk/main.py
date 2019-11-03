@@ -7,7 +7,7 @@
 # WARNING! All changes made in this file will be lost!
 
 from datetime import date
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtGui import QIcon, QPixmap
 from PyQt4 import *
 from PyQt4.QtCore import *
@@ -85,7 +85,6 @@ class Ui_Selekti(QtGui.QMainWindow):
 
         self.start_Button.setGeometry(QtCore.QRect(300, 480, 97, 27))
         self.start_Button.clicked.connect(self.start_Button_clicked)
-        
         self.train_Button = QtGui.QPushButton('Train', self)
         self.train_Button.setEnabled(False)
         
@@ -177,7 +176,6 @@ class Ui_Selekti(QtGui.QMainWindow):
         else:
             self.show()
         
- 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
         self.instructions_msg.setText("How to Get Started:")
@@ -217,12 +215,11 @@ class Ui_Selekti(QtGui.QMainWindow):
         if not self.selected_directory:
             raise Exception('Exception in browse_Button_clicked: self.selected_directory was read as an empty string. This may be because you did not select a directory.')
         else:
+            # Store browsing information for next session
             self.browsing_cache = open("browse_cache.txt","w")
             self.browsing_cache.writelines(self.selected_directory)
             self.browsing_cache.close() 
             
-            self.train_Button.setEnabled(False)
-            self.start_Button.setEnabled(False)
             self.current_directory_progressBar.setVisible(True)
             self.sub_directories_progressBar.setVisible(True)
 
@@ -234,6 +231,7 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.directory_contents = os.listdir(self.selected_directory)
         self.isMainImageUpdated = False
         
+        # Initialize progress bars' status
         self.current_directory_progress = 0
         self.sub_directory_progress = 0
         self.current_directory_progressBar.setValue(self.current_directory_progress)
@@ -244,17 +242,19 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.size_of_selected_directory = len(os.listdir(self.selected_directory))
         
 
-
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         self.size_of_current_directory = 0
         self.all_files_in_directory = []
-        # Go through and calculate the size of the directory for the progress bar
+        # Go through and calculate the size of the entire directory for the progress bar. This has to be done to get an 
+        # accurate calculation
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             self.all_files_in_directory.append(files)
 
         self.size_of_current_directory = len(self.all_files_in_directory)
         self.num_images_uploaded = 0
 
+        # Start reading through the current directory + all of its subdirectories, reading in all the valid
+        # image files and storing them in a list. Update the progress bar as it goes along.
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             
             # Value resets since we are searching through a new directory each time
@@ -282,7 +282,8 @@ class Ui_Selekti(QtGui.QMainWindow):
                     except IOError:
                         self.unimportedFiles.append(fullpath)
                         print('\nThe following file(s) is not an image type: ', files)
-
+                    
+                    # Update progress bar information and value 
                     self.sub_directory_progress += (1 / self.size_of_sub_directory)
                     self.sub_directories_progressBar.setValue(math.ceil(round(self.sub_directory_progress * 100, 3)))
                     self.sub_directories_label.setText("Importing Files from: " + root)
@@ -503,7 +504,7 @@ class Ui_Train(QtGui.QMainWindow):
             if self.all_images_rated_msg == QtGui.QMessageBox.Yes:
                 print("Start list over")
             else:
-                self.all_images_rated_msg = self.finish_Button_clicked(self.close)
+                self.all_images_rated_msg = self.finish_Button_clicked()
                 print("Go back to main menu")
                 
         return imageList[self.next_image_count]
