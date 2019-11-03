@@ -8,21 +8,29 @@ from PyQt4.QtGui import *
 def mouseInTickZone(position_on_bar):
     """ This is a hack because its totally depended on the current size of the 
     slider bar (700) and all the numbers are magic.."""
-    if (
-        position_on_bar < 25 or 
-        (position_on_bar > 75 and position_on_bar < 85) or 
-        (position_on_bar > 155 and position_on_bar < 165) or
-        (position_on_bar > 225 and position_on_bar < 245) or
-        (position_on_bar > 300 and position_on_bar < 315) or
-        (position_on_bar > 375 and position_on_bar < 395) or
-        (position_on_bar > 445 and position_on_bar < 475) or
-        (position_on_bar > 530 and position_on_bar < 550) or
-        (position_on_bar > 605 and position_on_bar < 625) or 
-        position_on_bar > 680
-       ):
-        return True
+
+    if (position_on_bar < 25):
+        return 1
+    if(position_on_bar > 75 and position_on_bar < 85):
+        return 2
+    if(position_on_bar > 155 and position_on_bar < 165):
+        return 3
+    if(position_on_bar > 225 and position_on_bar < 245):
+        return 4
+    if(position_on_bar > 300 and position_on_bar < 315):
+        return 5
+    if(position_on_bar > 375 and position_on_bar < 395):
+        return 6
+    if(position_on_bar > 445 and position_on_bar < 475):
+        return 7
+    if(position_on_bar > 530 and position_on_bar < 550):
+        return 8
+    if(position_on_bar > 605 and position_on_bar < 625):
+        return 9
+    if(position_on_bar > 670):
+        return 10
     
-    return False
+    return -1
 
 class Slider(QSlider):
     """ This class will prevent the unpredictable behavior of clicking on
@@ -31,41 +39,23 @@ class Slider(QSlider):
 
     def mousePressEvent(self, e):
         
-        print("[INFO] **********************************************")
         x_bar_position = e.pos().x()
-        print("[INFO] distance: {}".format(x_bar_position))
-
         interval_distance = 80
 
         interval_position = x_bar_position % interval_distance
-        print("[INFO] interval_position: {}".format(interval_position))
 
-        print("[INFO] **********************************************")
+        mouse_tick_zone = mouseInTickZone(x_bar_position)
 
-       # if intervalPos is less than 15 or greater than 65, snap to 
+        if e.button() != Qt.LeftButton or mouse_tick_zone < 1:
+            return
 
-        if e.button() == Qt.LeftButton and mouseInTickZone(x_bar_position):
-            e.accept()
+        # grab the current position of the notch 
+        notch_value = self.value()
 
-            value = (self.maximum() - self.minimum()) * x_bar_position / self.width() + self.minimum()
-            print("[INFO] value: {}".format(value))
-
-            value_rounded = round(value, 1)
-            print("[INFO] value_rounded: {}".format(value_rounded))
-
-            self.setValue(value_rounded)
-
-            # if x_bar_position < 25:
-            #     self.setValue(value)
-
-        else:
+        # if mouse is in tick zone and notch is on the same tick, allow the drag 
+        if mouse_tick_zone == notch_value:
             return super(Slider, self).mousePressEvent(e)
-
-
-        # if e.button() == Qt.LeftButton and (interval_position == 0):
-        #     e.accept()
-            
-        #     value = (self.maximum() - self.minimum()) * x_bar_position / self.width() + self.minimum()
-        #     self.setValue(value + 1)
-        # else:
-        #     return super(Slider, self).mousePressEvent(e)
+        # mouse in tick zone and the notch isn't on the same tick, jump to that tick
+        else: 
+            e.accept()
+            self.setValue(mouse_tick_zone)
