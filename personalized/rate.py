@@ -33,10 +33,10 @@ ratedImages = []
 scoreList = []
 print("Please rate the images on this scale \n{}".format(feelings))
 for imagePath in imagePaths:
-	ran = random.randint(0,5)
-	score = feelings[ran]
-	print(score)
-	# score = input("{}:\t".format(imagePath))
+	# ran = random.randint(0,5)
+	# score = feelings[ran]
+	# print(score)
+	score = input("{}:\t".format(imagePath))
 
 	scoreList.append(score)
 	ratedImages.append(imagePath)
