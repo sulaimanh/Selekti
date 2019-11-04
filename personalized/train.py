@@ -1,9 +1,13 @@
 # import the necessary packages
 from sklearn.linear_model import SGDRegressor
+from sklearn.linear_model import LinearRegression, Ridge
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import explained_variance_score
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
+from sklearn.metrics import mean_absolute_error
+from sklearn.metrics import accuracy_score
 import config
 import numpy as np
 import pickle
@@ -14,7 +18,7 @@ import os
 def load_data_split(splitPath):
 	# initialize the data and scores
 	data = []
-	scores = []
+	labels = []
 
 	# loop over the rows in the data split file
 	# We open the data split file(splitPath)
@@ -22,21 +26,20 @@ def load_data_split(splitPath):
 		# extract the class label and features from the row
 		row = row.strip().split(",")
 		# Here we get the label, which is at the first index
-		score = row[0]
+		label = row[0]
 		# Here, we get the rest of the features.
 		features = np.array(row[1:], dtype="float")
 
 		# update the data and label lists
 		data.append(features)
-		scores.append(score)
+		labels.append(label)
 
 	# convert the data and scores to NumPy arrays
 	# We append the feature vector and label to the data and scores list.
 	data = np.array(data)
-	scores = [float(s) for s in scores]
-
+	labels = np.array(labels)
 	# return a tuple of the data and scores
-	return (data, scores)
+	return (data, labels)
 
 # derive the paths to the training and testing CSV files
 # output/training.csv
@@ -48,54 +51,24 @@ testingPath = os.path.sep.join([config.BASE_CSV_PATH, "csv",
 
 # load the data from disk
 print("[INFO] loading data...")
+
 (trainX, trainY) = load_data_split(trainingPath)
 (testX, testY) = load_data_split(testingPath)
 
+# load the label encoder from disk
+le = pickle.loads(open(config.LE_PATH, "rb").read())
+
+
 # train the model
 print("[INFO] training model...")
-
-if os.path.isfile(config.MODEL_PATH):
-	model_file = open(config.MODEL_PATH, 'rb')
-	model = pickle.load(model_file)
-	model_file.close()
-	print("[INFO] Using existing model.")
-else:
-	model = SGDRegressor(loss='huber',		#TODO: Change to Ridge or SVR because we'll have less than 100K samples
-						penalty='l2', 
-						alpha=0.0001, 
-						fit_intercept=False, 
-						n_iter=5, 
-						shuffle=True, 
-						verbose=1, 
-						epsilon=0.1, 
-						random_state=42, 
-						learning_rate='invscaling', 
-						eta0=0.01, 
-						power_t=0.5)
-	print("[INFO] Using new model.")
-
-sc = StandardScaler()
-
-trainX = sc.fit_transform(trainX)
-testX = sc.transform(testX)
-
+model = LogisticRegression(solver="lbfgs", multi_class="auto")
 model.fit(trainX, trainY)
 
 # evaluate the model
 print("[INFO] evaluating...")
 preds = model.predict(testX)
-
-# Some predictions came out negative... How do we tell the model to predict within the 1 - 10 range?
-
-# Verify the data types inside these babies
-# print("[INFO] testY: {}".format(testY))
-# print("[INFO] preds: {}".format(preds))
-
-print("[INFO] Mean absolute error: {}".format(mean_squared_error(testY, preds)))
-print("[INFO] Explained variance score: {}".format(explained_variance_score(testY, preds)))
-# TODO: Update model based on error
-
-
+print(classification_report(testY, preds, target_names=le.classes_))
+print("Accuracy: {}".format(accuracy_score(testY, preds)))
 
 # serialize the model to disk
 print("[INFO] saving model...")

@@ -4,6 +4,8 @@ from imutils import paths
 import shutil
 import os
 from PIL import Image
+import random
+
 
 # I have some test images. Import images to the images folder
 p = os.path.sep.join([config.ORIG_INPUT_DATASET, "all-images"])
@@ -24,19 +26,20 @@ os.mkdir(dstTest)
 os.mkdir(dstTrain)
 os.mkdir(dstCSV)
 
+feelings = ["happy", "excited", "nostalgic", "disgust", "angry", "sad"]
+
 
 ratedImages = []
 scoreList = []
-print("Please rate the image from 1 - 10\nType 0 (zero) to exit\n")
+print("Please rate the images on this scale \n{}".format(feelings))
 for imagePath in imagePaths:
-	
-	score = int(input("{}:\t".format(imagePath)))
-	if score == 0:
-		break
+	ran = random.randint(0,5)
+	score = feelings[ran]
+	print(score)
+	# score = input("{}:\t".format(imagePath))
 
 	scoreList.append(score)
 	ratedImages.append(imagePath)
-
 
 size = len(ratedImages)
 train = int((3/4) * size)

@@ -15,6 +15,10 @@ BASE_PATH = "dataset"
 # directories
 TRAIN = "training"
 TEST = "testing"
+VAL = "validation"
+LE_PATH = os.path.sep.join(["output", "le.cpickle"])
+
+CLASSES = ["happy", "excited", "nostalgic", "disgust", "angry", "sad"]
 
 # set the batch size
 BATCH_SIZE = 32
