@@ -55,19 +55,15 @@ print("[INFO] loading data...")
 (trainX, trainY) = load_data_split(trainingPath)
 (testX, testY) = load_data_split(testingPath)
 
-# load the label encoder from disk
-le = pickle.loads(open(config.LE_PATH, "rb").read())
-
-
 # train the model
 print("[INFO] training model...")
-model = LogisticRegression(solver="lbfgs", multi_class="auto")
+model = LogisticRegression(solver="lbfgs", multi_class="multinomial")
 model.fit(trainX, trainY)
 
 # evaluate the model
 print("[INFO] evaluating...")
 preds = model.predict(testX)
-print(classification_report(testY, preds, target_names=le.classes_))
+print(classification_report(testY, preds))
 print("Accuracy: {}".format(accuracy_score(testY, preds)))
 
 # serialize the model to disk

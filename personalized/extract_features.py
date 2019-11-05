@@ -17,7 +17,7 @@ from sklearn.feature_extraction import DictVectorizer
 # load the VGG16 network and initialize the label encoder
 print("[INFO] loading network...")
 model = VGG16(weights="imagenet", include_top=False)
-le = None
+
 # loop over the data splits
 for split in (config.TRAIN, config.TEST):
 	# grab all image paths in the current split
@@ -37,12 +37,7 @@ for split in (config.TRAIN, config.TEST):
 	for image in imagePaths:
 		image = image.split(os.path.sep)[-1]
 		labels.append(labels_and_id.get(image))
-
-	# if the label encoder is None, create it
-	if le is None:
-		le = LabelEncoder()
-		le.fit(labels)
-
+    
 	# open the output CSV file for writing
 	# We are going to extract the features and write them in here
 	csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv",
@@ -62,9 +57,7 @@ for split in (config.TRAIN, config.TEST):
 
 		# This will get the paths of every image in batches. Utilizing array slicing
 		batchPaths = imagePaths[i:i + config.BATCH_SIZE]
-		batchLabels = le.transform(labels[i:i + config.BATCH_SIZE])
 		batchImages = []
-		print(batchLabels)
 
 		# loop over the images and labels in the current batch
 		for imagePath in batchPaths:
@@ -97,7 +90,7 @@ for split in (config.TRAIN, config.TEST):
 
 		# loop over the class labels and extracted features
 		# We write to our CSV file.
-		for (label, vec) in zip(batchLabels, features):
+		for (label, vec) in zip(labels, features):
 			# construct a row that exists of the class label and
 			# extracted features
 			vec = ",".join([str(v) for v in vec])
@@ -106,8 +99,3 @@ for split in (config.TRAIN, config.TEST):
 	# close the CSV file
 	# We will have one CSV file per data split.
 	csv.close()
-
-# serialize the label encoder to disk
-f = open(config.LE_PATH, "wb")
-f.write(pickle.dumps(le))
-f.close()

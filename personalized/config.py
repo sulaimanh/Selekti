@@ -18,7 +18,7 @@ TEST = "testing"
 VAL = "validation"
 LE_PATH = os.path.sep.join(["output", "le.cpickle"])
 
-CLASSES = ["happy", "excited", "nostalgic", "disgust", "angry", "sad", "boring"]
+CLASSES = ["happy", "surpised", "funny", "amazed","nostalgic", "disgust", "angry", "sad", "boring"]
 
 # set the batch size
 BATCH_SIZE = 32
