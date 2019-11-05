@@ -16,6 +16,7 @@ from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
 from personalModel.personal_model import PersonalModel
+from utils.slider import Slider
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -26,6 +27,11 @@ import glob
 import json
 import shutil
 
+# try:
+#     _fromUtf8 = QtCore.QString.fromUtf8
+# except AttributeError:
+#     def _fromUtf8(s):
+#         return s
 
 # try:
 #     _encoding = QtGui.QApplication.UnicodeUTF8
@@ -47,7 +53,7 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.setWindowTitle(("Selekti"))
         self.WINDOW_WIDTH = 900
         self.WINDOW_HEIGHT = 630
-        self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
         
         self.current_directory_label = QtGui.QLabel(self)
         self.current_directory_label.setGeometry(QtCore.QRect(20, 510, 801, 21))
@@ -60,10 +66,12 @@ class Ui_Selekti(QtGui.QMainWindow):
 
         self.current_directory_progressBar = QtGui.QProgressBar(self)
         self.current_directory_progressBar.setGeometry(QtCore.QRect(20, 530, 801, 21))
+        self.current_directory_progressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.current_directory_progressBar.setVisible(False)
 
         self.sub_directories_progressBar = QtGui.QProgressBar(self)
         self.sub_directories_progressBar.setGeometry(QtCore.QRect(20, 580, 801, 21))
+        self.sub_directories_progressBar.setAlignment(QtCore.Qt.AlignCenter)
         self.sub_directories_progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
@@ -109,12 +117,24 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.main_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
         self.show()
+        self.set_styles()
+        self.first_time_use()
 
     def set_styles(self):
         self.mainMenu.setPalette(QPalette(Qt.white))
         self.current_directory_label.setStyleSheet("QLabel { color: white; }")
         self.sub_directories_label.setStyleSheet("QLabel { color: white; }")
         self.setStyleSheet("QMainWindow { background-color: rgb(53, 53, 53); }")      
+
+    def first_time_use(self):
+        # If the user has selected a directory before, then the text file will not be empty, and we can assume
+        # the user has ran the program before. 
+        if os.path.getsize("browse_cache.txt"):
+            print("browse_cache.txt has a directory. Do not run first_time_use")
+        else:
+            print("browse_cache.txt is empty. Run first_time_use")
+            self.instructions_Button_clicked()
+
 
     def warnings_Button_clicked(self, qmodelindex):
         
@@ -139,7 +159,7 @@ class Ui_Selekti(QtGui.QMainWindow):
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
         self.instructions_msg.setText("How to Get Started:")
-        self.instructions_msg.setInformativeText("This software is used to compare images to distinguish which are more aesthetically pleasing to the user. \n\n1. To begin, start by selecting a directory filled with images you would like to use. These will be used to train the algorithm as well as sort out good images from the bad ones.\n\n2. Select 'Train' and begin training the algorithm by dragging the slider to rate the image. The more feedback you give, the more the algorithm learns.\n\n3. Once you are done, return to the main screen and press 'Start'. The algorithm will begin processing each photo and put the results in a new directory.")
+        self.instructions_msg.setInformativeText("This software is used to compare images to distinguish which are more aesthetically pleasing to the user. \n\n1. To begin, start by going to the 'File' dropdown menu option on the top left and selecting 'Browse'. Choose a directory filled with images you would like to use to train the algorithm as well as sort out good images from the bad ones!\n\n2. Select 'Train' and begin training the algorithm by dragging the slider to rate the image. The more feedback you give, the more the algorithm learns.\n\n3. Once you are done, return to the main screen and press 'Start'. The algorithm will begin processing each photo and put the results in a new directory.")
         self.instructions_msg.setWindowTitle("How to Get Started")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
@@ -347,10 +367,11 @@ class Ui_Train(QtGui.QMainWindow):
 
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
+
         self.setWindowTitle(("Train"))   
         self.WINDOW_WIDTH = 900
         self.WINDOW_HEIGHT = 630
-        self.setGeometry(200, 200, self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
 
         self.importedFiles = ImageData(self.imgs)
 
@@ -377,11 +398,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.skip_Button = QtGui.QPushButton('Skip', self)
         self.skip_Button.setGeometry(QtCore.QRect(250, 510, 100, 30))
         self.skip_Button.clicked.connect(self.skip_Button_clicked)
-    
-        self.title_label = QtGui.QLabel(self)
-        self.title_label.setText("What do you think of this photo?")
-        self.title_label.setStyleSheet("QLabel { color: white; font: 18px; }")
-        self.title_label.setGeometry(QtCore.QRect(350, 30, 300, 30))
 
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
@@ -389,7 +405,7 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
-        self.rate_Slider = QSlider(Qt.Horizontal, self)
+        self.rate_Slider = Slider(Qt.Horizontal, self)
         self.rate_Slider.setGeometry(QtCore.QRect(100, 480, 700, 30))
         self.rate_Slider.setMinimum(1)
         self.rate_Slider.setMaximum(10)
@@ -411,9 +427,20 @@ class Ui_Train(QtGui.QMainWindow):
             print("[INFO] No images to score.")
         else:
             self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            self.train_imageLabel.setObjectName('train_imageLabel')
+            self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
 
         self.show()
+
+    def train_image_clicked(self, event):
+        self.maximized_window = QWidget()
+        self.maximized_image_label = QLabel()
+        self.maximized_image_label.setPixmap(QPixmap(self.current_img['imgPath']))
+        self.maximized_vbox = QVBoxLayout()
+        self.maximized_vbox.addWidget(self.maximized_image_label)
+        self.maximized_window.setLayout(self.maximized_vbox)
+        self.maximized_window.show()
 
     def skip_Button_clicked(self):
         self.current_img = self.getRandomImage(self.imgs_unscored)
@@ -432,7 +459,6 @@ class Ui_Train(QtGui.QMainWindow):
         if self.current_img == None:
             print("[INFO] No image to rate.")
             return
-
         # Before this btn is clicked, the user has already chosen the score on the slider
         # Therefore we can remove the current img from the unscored list
         print("[INFO] Removing {} from imgs_unscored".format(self.current_img))
@@ -516,7 +542,6 @@ if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
 
     ui = Ui_Selekti()
-    ui.set_styles()
 
     sys.exit(app.exec_())
 

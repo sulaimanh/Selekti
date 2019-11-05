@@ -1,2 +1,4 @@
 __pycache__
 browse_cache.txt
+build/
+dist/

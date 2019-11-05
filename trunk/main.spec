@@ -1,13 +1,13 @@
-# -*- mode: python ; coding: utf-8 -*-
+# -*- mode: python -*-
 
 block_cipher = None
 
 
 a = Analysis(['main.py'],
-             pathex=['/media/camilo/terramonster/hw/SeniorDesign1/Selekti/trunk'],
+             pathex=['C:\\Users\\chong\\Selekti\\trunk'],
              binaries=[],
              datas=[],
-             hiddenimports=[],
+             hiddenimports=['sklearn.neighbors.typedefs'],
              hookspath=[],
              runtime_hooks=[],
              excludes=[],
@@ -19,15 +19,18 @@ pyz = PYZ(a.pure, a.zipped_data,
              cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
-          a.binaries,
-          a.zipfiles,
-          a.datas,
           [],
+          exclude_binaries=True,
           name='main',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
           upx=True,
-          upx_exclude=[],
-          runtime_tmpdir=None,
-          console=False , icon='the-icon.ico')
+          console=True )
+coll = COLLECT(exe,
+               a.binaries,
+               a.zipfiles,
+               a.datas,
+               strip=False,
+               upx=True,
+               name='main')
