@@ -23,10 +23,12 @@ if os.path.exists(dstTest):
 	shutil.rmtree(dstTest)
 	shutil.rmtree(dstTrain)
 	shutil.rmtree(dstCSV)
+	shutil.rmtree(ratedFolder)
 
 os.mkdir(dstTest)
 os.mkdir(dstTrain)
 os.mkdir(dstCSV)
+os.mkdir(ratedFolder)
 
 
 ratedImages = []
