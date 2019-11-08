@@ -12,6 +12,8 @@ import pickle
 import random
 import os
 
+from sklearn.feature_extraction import DictVectorizer
+
 # load the VGG16 network and initialize the label encoder
 print("[INFO] loading network...")
 model = VGG16(weights="imagenet", include_top=False)
@@ -30,13 +32,12 @@ for split in (config.TRAIN, config.TEST):
 
 	# This represents the scores of each image.
 	s = Score(split)
-	scores_and_id = s.getScores()
-	scores = []
+	labels_and_id = s.getScores()
+	labels = []
 	for image in imagePaths:
 		image = image.split(os.path.sep)[-1]
-		scores.append(scores_and_id.get(image))
-
-
+		labels.append(labels_and_id.get(image))
+    
 	# open the output CSV file for writing
 	# We are going to extract the features and write them in here
 	csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv",
@@ -89,11 +90,11 @@ for split in (config.TRAIN, config.TEST):
 
 		# loop over the class labels and extracted features
 		# We write to our CSV file.
-		for (score, vec) in zip(scores, features):
+		for (label, vec) in zip(labels, features):
 			# construct a row that exists of the class label and
 			# extracted features
 			vec = ",".join([str(v) for v in vec])
-			csv.write("{}, {}\n".format(score, vec))
+			csv.write("{}, {}\n".format(label, vec))
 
 	# close the CSV file
 	# We will have one CSV file per data split.

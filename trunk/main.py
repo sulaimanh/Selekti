@@ -16,6 +16,8 @@ from PIL import Image
 from handlers.model_builder import Nima
 from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
+from personalModel.personal_model import PersonalModel
+from utils.slider import Slider
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -328,7 +330,7 @@ class Ui_Selekti(QtGui.QMainWindow):
 
         totalSamples = []
         j = 0
-       
+        
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             print("[INFO] ROOT: " + root)
 
@@ -419,6 +421,10 @@ class Ui_Train(QtGui.QMainWindow):
     imgs_unscored = []
     isTrainWindowShown = True
 
+    # initialize personal model
+    modelPath = os.path.sep.join(["personalModel", "model.cpickle"])
+    model = PersonalModel(modelPath)
+
 
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
@@ -460,7 +466,7 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
-        self.rate_Slider = QSlider(Qt.Horizontal, self)
+        self.rate_Slider = Slider(Qt.Horizontal, self)
         self.rate_Slider.setGeometry(QtCore.QRect(100, 480, 700, 30))
         self.rate_Slider.setMinimum(1)
         self.rate_Slider.setMaximum(10)
@@ -545,6 +551,13 @@ class Ui_Train(QtGui.QMainWindow):
                      'imgScore': self.rate_Slider.value()}
         self.imgs_scored.append(imgScored)
 
+
+        # Train the user's personal model by feeding it the feature vector
+        # of the image the user just scored, along with the score.
+        f_vec = self.model.getFeatureVector(self.current_img['imgPath'])        
+        self.model.feedModel(f_vec, imgScored['imgScore'])
+
+
         print("[INFO] List of scored images:")
         print(json.dumps(self.imgs_scored, indent=2))
 
@@ -597,6 +610,9 @@ class Ui_Train(QtGui.QMainWindow):
             self.ui2.show()
         else:
             self.show()
+
+        self.model.saveModel()
+        print("[INFO] Model finished saving")
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
