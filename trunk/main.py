@@ -6,7 +6,8 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt4 import QtCore, QtGui
+from datetime import date
+from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.QtGui import QIcon, QPixmap
 from PyQt4 import *
 from PyQt4.QtCore import *
@@ -42,11 +43,12 @@ import shutil
 #         return QtGui.QApplication.translate(context, text, disambig)
 
 class Ui_Selekti(QtGui.QMainWindow):
-
+    temp = []
     unimportedFiles = []
     importedFiles = []
     selected_directory = ""
     isMainImageUpdated = False;
+    isTrainWindowShown = True
 
     def __init__(self, parent=None):
         super(Ui_Selekti, self).__init__(parent)
@@ -54,7 +56,9 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.WINDOW_WIDTH = 900
         self.WINDOW_HEIGHT = 630
         self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-        
+
+        self.isTrainWindowShown = False
+
         self.current_directory_label = QtGui.QLabel(self)
         self.current_directory_label.setGeometry(QtCore.QRect(20, 510, 801, 21))
         self.current_directory_label.setVisible(False)
@@ -75,12 +79,22 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.sub_directories_progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
-        self.start_Button.setEnabled(False)
+        
+        if self.is_first_time_use():
+            self.start_Button.setEnabled(False)
+        else:
+            self.start_Button.setEnabled(True)
+
         self.start_Button.setGeometry(QtCore.QRect(300, 480, 97, 27))
         self.start_Button.clicked.connect(self.start_Button_clicked)
-        
         self.train_Button = QtGui.QPushButton('Train', self)
         self.train_Button.setEnabled(False)
+        
+        if self.is_first_time_use():
+            self.train_Button.setEnabled(False)
+        else:
+            self.train_Button.setEnabled(True)
+
         self.train_Button.setGeometry(QtCore.QRect(500, 480, 97, 27))
         self.train_Button.clicked.connect(self.train_Button_clicked)            
         
@@ -116,25 +130,23 @@ class Ui_Selekti(QtGui.QMainWindow):
         
         self.main_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
+        # print(self.isTrainWindowShown)
         self.show()
         self.set_styles()
-        self.first_time_use()
+
+        if self.is_first_time_use():
+            print("User's first time using application")
+            self.instructions_Button_clicked()
+        else:
+            print("User revisiting. Copy imported images from file")
+            with open("imported_files_cache.txt") as f:
+                self.importedFiles = f.read().splitlines()
 
     def set_styles(self):
         self.mainMenu.setPalette(QPalette(Qt.white))
         self.current_directory_label.setStyleSheet("QLabel { color: white; }")
         self.sub_directories_label.setStyleSheet("QLabel { color: white; }")
         self.setStyleSheet("QMainWindow { background-color: rgb(53, 53, 53); }")      
-
-    def first_time_use(self):
-        # If the user has selected a directory before, then the text file will not be empty, and we can assume
-        # the user has ran the program before. 
-        if os.path.getsize("browse_cache.txt"):
-            print("browse_cache.txt has a directory. Do not run first_time_use")
-        else:
-            print("browse_cache.txt is empty. Run first_time_use")
-            self.instructions_Button_clicked()
-
 
     def warnings_Button_clicked(self, qmodelindex):
         
@@ -154,8 +166,18 @@ class Ui_Selekti(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot()   
     def train_Button_clicked(self):
-        self.ui1 = Ui_Train(self)
- 
+
+        print(self.importedFiles)
+        self.text = ImageData(None, self.isTrainWindowShown)
+
+        if self.text.isTrainWinShown == False:
+            self.text.isTrainWinShown = True
+            self.hide()
+            self.ui1 = Ui_Train(self)
+            self.ui1.show()
+        else:
+            self.show()
+        
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
         self.instructions_msg.setText("How to Get Started:")
@@ -164,10 +186,24 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
 
+    def is_first_time_use(self):
+        # Reads in the directory
+        if os.path.getsize("browse_cache.txt") == 0:
+
+            # File is empty. User has not chosen one before. 
+            return True 
+        else:
+            # Revisit previous directory
+            self.browsing_cache = open("browse_cache.txt","r+")
+            self.previous_directory = self.browsing_cache.readline()  
+            self.browsing_cache.close()
+
+            return False 
+
     def browse_Button_clicked(self):
 
         # Reads in the directory
-        if os.path.getsize("browse_cache.txt"):
+        if not self.is_first_time_use():
             # Revisit previous directory
             self.browsing_cache = open("browse_cache.txt","r+")
             self.previous_directory = self.browsing_cache.readline()
@@ -181,12 +217,11 @@ class Ui_Selekti(QtGui.QMainWindow):
         if not self.selected_directory:
             raise Exception('Exception in browse_Button_clicked: self.selected_directory was read as an empty string. This may be because you did not select a directory.')
         else:
+            # Store browsing information for next session
             self.browsing_cache = open("browse_cache.txt","w")
             self.browsing_cache.writelines(self.selected_directory)
             self.browsing_cache.close() 
             
-            self.train_Button.setEnabled(False)
-            self.start_Button.setEnabled(False)
             self.current_directory_progressBar.setVisible(True)
             self.sub_directories_progressBar.setVisible(True)
 
@@ -198,6 +233,7 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.directory_contents = os.listdir(self.selected_directory)
         self.isMainImageUpdated = False
         
+        # Initialize progress bars' status
         self.current_directory_progress = 0
         self.sub_directory_progress = 0
         self.current_directory_progressBar.setValue(self.current_directory_progress)
@@ -207,16 +243,20 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.current_directory_label.setVisible(True)
         self.size_of_selected_directory = len(os.listdir(self.selected_directory))
         
+
         print('~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~')
         self.size_of_current_directory = 0
         self.all_files_in_directory = []
-        # Go through and calculate the size of the directory for the progress bar
+        # Go through and calculate the size of the entire directory for the progress bar. This has to be done to get an 
+        # accurate calculation
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             self.all_files_in_directory.append(files)
 
         self.size_of_current_directory = len(self.all_files_in_directory)
         self.num_images_uploaded = 0
 
+        # Start reading through the current directory + all of its subdirectories, reading in all the valid
+        # image files and storing them in a list. Update the progress bar as it goes along.
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             
             # Value resets since we are searching through a new directory each time
@@ -244,7 +284,8 @@ class Ui_Selekti(QtGui.QMainWindow):
                     except IOError:
                         self.unimportedFiles.append(fullpath)
                         print('\nThe following file(s) is not an image type: ', files)
-
+                    
+                    # Update progress bar information and value 
                     self.sub_directory_progress += (1 / self.size_of_sub_directory)
                     self.sub_directories_progressBar.setValue(math.ceil(round(self.sub_directory_progress * 100, 3)))
                     self.sub_directories_label.setText("Importing Files from: " + root)
@@ -266,13 +307,19 @@ class Ui_Selekti(QtGui.QMainWindow):
                 self.main_imageLabel.setPixmap(self.mainImage)
                 self.main_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
+
+            self.imported_files_cache=open("imported_files_cache.txt",'w')
+            for element in self.importedFiles:
+                self.imported_files_cache.write(element)
+                self.imported_files_cache.write('\n')
+            self.imported_files_cache.close()
+
             self.current_directory_label.setText("Completed Importing Files from: " + self.selected_directory)
             self.sub_directories_label.setText("Completed Importing Files from: " + root)
             self.current_directory_progressBar.setValue(math.ceil(100))
             self.sub_directories_progressBar.setValue(math.ceil(100))
         else:
             raise Exception('Exception in browse_Button_clicked: current directory progressBar value calculated incorrectly: {}'.format(math.ceil(round(self.current_directory_progress * 100, 3))))
-
 
     def start_Button_clicked(self):
         print('Start Button Clicked')
@@ -283,7 +330,7 @@ class Ui_Selekti(QtGui.QMainWindow):
 
         totalSamples = []
         j = 0
-       
+        
         for (root, directories, files) in os.walk(self.selected_directory, topdown=True):
             print("[INFO] ROOT: " + root)
 
@@ -319,14 +366,17 @@ class Ui_Selekti(QtGui.QMainWindow):
         print("[INFO] Sorted (descending) Total samples:")
         totalSamples.sort(key=lambda i: i['mean_score_prediction'], reverse=True)
         print(json.dumps(totalSamples, indent=2))
+        
+        # Creates new directory name. Checks if previous directory exists.
+        self.new_dir_title = self.create_directory_name()
 
         # create new directory to hold top rated pics
-        new_dir = os.path.sep.join([self.selected_directory, "Top_pic(k)s"])
+        self.new_dir = os.path.sep.join([self.selected_directory, self.new_dir_title])
         
-        if os.path.exists(new_dir):
-    	    shutil.rmtree(new_dir)
+        if os.path.exists(self.new_dir):
+    	    shutil.rmtree(self.new_dir)
 
-        os.mkdir(new_dir)
+        os.mkdir(self.new_dir)
 
         # determine number of pics to copy into new dir
         # 20% for now
@@ -338,12 +388,26 @@ class Ui_Selekti(QtGui.QMainWindow):
         for sample in totalSamples:
             if i == num_to_pick:
                 break
-            shutil.copy(sample['image_path'], new_dir)
+            shutil.copy(sample['image_path'], self.new_dir)
             i += 1
 
         print("[INFO] Done copying into new dir.")
 
         #TODO: Notify user of the new directory or open it for them 
+
+    def create_directory_name(self):
+
+        # Get today's date
+        today = date.today()
+        today = today.strftime("%B %d, %Y")
+        # Check if directory name already exists in current directory
+        i = 1
+        self.new_dir_title = "Top_Picks_" + today
+        while os.path.isdir(os.path.sep.join([self.selected_directory, self.new_dir_title])):
+            self.new_dir_title = "Top_Picks_" + today + "(" + str(i) + ")"
+            i = i+1
+        
+        return self.new_dir_title
 
     def updateMainImage(self, image):
         self.main_imageLabel.setPixmap(QPixmap(image))
@@ -352,18 +416,15 @@ class Ui_Selekti(QtGui.QMainWindow):
 
 class Ui_Train(QtGui.QMainWindow):
     imgs = []
+    next_image_count = 0
     imgs_scored = []
     imgs_unscored = []
+    isTrainWindowShown = True
 
     # initialize personal model
     modelPath = os.path.sep.join(["personalModel", "model.cpickle"])
     model = PersonalModel(modelPath)
 
-    def getRandomImage(self, imageList):
-        if not imageList:
-            return None
-        
-        return imageList[random.randint(0,len(imageList)-1)]
 
     def __init__(self, parent=None):
         super(Ui_Train, self).__init__(parent)
@@ -372,15 +433,15 @@ class Ui_Train(QtGui.QMainWindow):
         self.WINDOW_WIDTH = 900
         self.WINDOW_HEIGHT = 630
         self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
-
-        self.importedFiles = ImageData(self.imgs)
+        self.isTrainWindowShown = True
+        self.importedFiles = ImageData(self.imgs, self.isTrainWindowShown)
 
         # Random images will be taken from imgs_unscored
         for imgPath in self.importedFiles.images:
             self.imgs_unscored.append({'imgPath': imgPath})
         
-        print("[INFO] imgs_unscored:")
-        print(json.dumps(self.imgs_unscored, indent=2))
+        # print("[INFO] imgs_unscored:")
+        # print(json.dumps(self.imgs_unscored, indent=2))
 
         self.mainMenu = self.menuBar()
         # Actions which can be seen from the drop-down of each menu selection
@@ -422,16 +483,37 @@ class Ui_Train(QtGui.QMainWindow):
         self.train_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
         self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
 
-        self.current_img = self.getRandomImage(self.imgs_unscored)
+        self.current_img = self.get_next_image(self.imgs_unscored)
         if  self.current_img == None:
             print("[INFO] No images to score.")
         else:
+            # click on the train image
             self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
             self.train_imageLabel.setObjectName('train_imageLabel')
             self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
 
         self.show()
+
+    def get_next_image(self, imageList):
+        if not imageList:
+            return None
+        # Index through each image in the imageList. Reset if they reached the end of the list
+        if self.next_image_count < len(imageList)-1:
+            self.next_image_count += 1
+        else:
+            self.next_image_count = 0
+
+            self.all_images_rated_msg = QMessageBox.question(self, "Amazing!", 
+            "Wow! You went through all the images! Would you want to start over and rate them again?", QMessageBox.Yes, QMessageBox.No)
+            # self.all_images_rated_msg.setWindowTitle("Amazing!")
+            if self.all_images_rated_msg == QtGui.QMessageBox.Yes:
+                print("Start list over")
+            else:
+                self.all_images_rated_msg = self.finish_Button_clicked()
+                print("Go back to main menu")
+                
+        return imageList[self.next_image_count]
 
     def train_image_clicked(self, event):
         self.maximized_window = QWidget()
@@ -443,7 +525,7 @@ class Ui_Train(QtGui.QMainWindow):
         self.maximized_window.show()
 
     def skip_Button_clicked(self):
-        self.current_img = self.getRandomImage(self.imgs_unscored)
+        self.current_img = self.get_next_image(self.imgs_unscored)
         if  self.current_img == None:
             print("[INFO] No image to skip.")
         else:
@@ -480,7 +562,7 @@ class Ui_Train(QtGui.QMainWindow):
         print(json.dumps(self.imgs_scored, indent=2))
 
         # Move on to next pic
-        self.current_img = self.getRandomImage(self.imgs_unscored)
+        self.current_img = self.get_next_image(self.imgs_unscored)
         if  self.current_img == None:
             print("[INFO] No image to rate.")
             # TODO: Produce dialog informing user end of list acheived
@@ -517,11 +599,20 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setVisible(True)
 
     def finish_Button_clicked(self):
+        print('Finish Button Clicked')
+
+        self.text = ImageData(None, self.isTrainWindowShown)
+        self.text.isTrainWinShown = True
+        if self.text.isTrainWinShown == True:
+            self.text.isTrainWinShown = False
+            self.hide()
+            self.ui2 = Ui_Selekti(self)
+            self.ui2.show()
+        else:
+            self.show()
 
         self.model.saveModel()
         print("[INFO] Model finished saving")
-
-        self.deleteLater()
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
@@ -534,9 +625,13 @@ class Ui_Train(QtGui.QMainWindow):
 # Keep track of all successfully imported images.
 class ImageData:
     images = []
-    def __init__(self, retrievePhotos):
+    isTrainWinShown = False
+    def __init__(self, retrievePhotos, retrieveIsTrainWindowShown):
         retrievePhotos = Ui_Selekti()
+        retrieveIsTrainWindowShown = Ui_Selekti()
         self.images = retrievePhotos.importedFiles
+        self.isTrainWinShown = retrieveIsTrainWindowShown.isTrainWindowShown
+
 
 if __name__ == "__main__":
     app = QtGui.QApplication(sys.argv)
