@@ -66,7 +66,7 @@ if os.path.exists(csvPath):
 	csv = open(csvPath, "+a")
 else:
 	csv = open(csvPath, "w")
-csv = open(csvPath, "w")
+
 for (image,score) in zip(training,trainingScore):
 	print(image)
 	shutil.copy(image, dstTrain)
