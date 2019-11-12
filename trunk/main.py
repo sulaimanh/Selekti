@@ -452,9 +452,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
         
-        self.rate_Button = QtGui.QPushButton('Rate', self)
-        self.rate_Button.setGeometry(QtCore.QRect(400, 510, 100, 30))
-        self.rate_Button.clicked.connect(self.rate_Button_clicked)
 
         self.skip_Button = QtGui.QPushButton('Skip', self)
         self.skip_Button.setGeometry(QtCore.QRect(250, 510, 100, 30))
@@ -466,14 +463,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
-        self.rate_Slider = Slider(Qt.Horizontal, self)
-        self.rate_Slider.setGeometry(QtCore.QRect(100, 480, 700, 30))
-        self.rate_Slider.setMinimum(1)
-        self.rate_Slider.setMaximum(10)
-        self.rate_Slider.setValue(0)
-        self.rate_Slider.setTickPosition(QSlider.TicksBelow)
-        self.rate_Slider.setTickInterval(1)
-        self.rate_Slider.valueChanged[int].connect(self.on_rate_value_changed)
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
         self.finish_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
