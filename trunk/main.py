@@ -490,6 +490,7 @@ class Ui_Train(QtGui.QMainWindow):
 
         # Ideally all this stuff would go into StarButton's constructor but I couldn't find out how to override it properly
         for btn in stars:
+            btn.initStarList()
             btn.setIcon(QIcon(star_empty))
             btn.setDefaultIcon(QIcon(star_empty))
             btn.setOnHoverIcon(QIcon(star_filled))
@@ -499,6 +500,21 @@ class Ui_Train(QtGui.QMainWindow):
             btn.setEnabled(True)
             btn.clicked.connect(self.rate_Button_clicked)
 
+        # when the current star is hovered over, all the stars to its left
+        # should also be highlighted 
+        self.star_2.addDependentStar(self.star_1)
+
+        self.star_3.addDependentStar(self.star_1)
+        self.star_3.addDependentStar(self.star_2)
+
+        self.star_4.addDependentStar(self.star_1)
+        self.star_4.addDependentStar(self.star_2)
+        self.star_4.addDependentStar(self.star_3)
+
+        self.star_5.addDependentStar(self.star_1)
+        self.star_5.addDependentStar(self.star_2)
+        self.star_5.addDependentStar(self.star_3)
+        self.star_5.addDependentStar(self.star_4)
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
