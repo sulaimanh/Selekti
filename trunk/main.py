@@ -454,7 +454,7 @@ class Ui_Train(QtGui.QMainWindow):
         
 
         self.skip_Button = QtGui.QPushButton('Skip', self)
-        self.skip_Button.setGeometry(QtCore.QRect(250, 510, 100, 30))
+        self.skip_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
         self.skip_Button.clicked.connect(self.skip_Button_clicked)
 
         self.rate_label = QtGui.QLabel(self)
@@ -465,7 +465,7 @@ class Ui_Train(QtGui.QMainWindow):
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
-        self.finish_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
+        self.finish_Button.setGeometry(QtCore.QRect(600, 560, 100, 30))
         self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
