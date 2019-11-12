@@ -537,7 +537,7 @@ class Ui_Train(QtGui.QMainWindow):
 
         # Add the scored image to imgs_scored
         imgScored = {'imgPath': self.current_img['imgPath'],
-                     'imgScore': self.rate_Slider.value()}
+                     'imgScore': -1 }
         self.imgs_scored.append(imgScored)
 
 
