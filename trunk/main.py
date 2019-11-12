@@ -18,6 +18,7 @@ from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
 from personalModel.personal_model import PersonalModel
 from utils.slider import Slider
+from utils.star_btn import StarButton
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -462,6 +463,44 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setStyleSheet("QLabel { color: white; font: 18px; }")
         self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+
+        star_empty = QPixmap("star_empty.png")
+        star_filled = QPixmap("star_filled.png")
+        star_size = star_empty.rect().size()
+
+        stars = []
+
+        # Make the stars and position them
+        self.star_1 = StarButton('', self)
+        self.star_1.setGeometry(QtCore.QRect(200, 500, 97, 27))
+        self.star_2 = StarButton('', self)
+        self.star_2.setGeometry(QtCore.QRect(300, 500, 97, 27))
+        self.star_3 = StarButton('', self)
+        self.star_3.setGeometry(QtCore.QRect(400, 500, 97, 27))
+        self.star_4 = StarButton('', self)
+        self.star_4.setGeometry(QtCore.QRect(500, 500, 97, 27))
+        self.star_5 = StarButton('', self)
+        self.star_5.setGeometry(QtCore.QRect(600, 500, 97, 27))
+
+        stars.append(self.star_1)
+        stars.append(self.star_2)
+        stars.append(self.star_3)
+        stars.append(self.star_4)
+        stars.append(self.star_5)
+
+        # Ideally all this stuff would go into StarButton's constructor but I couldn't find out how to override it properly
+        for btn in stars:
+            btn.setIcon(QIcon(star_empty))
+            btn.setDefaultIcon(QIcon(star_empty))
+            btn.setOnHoverIcon(QIcon(star_filled))
+            btn.setFixedSize(star_size)
+            btn.setIconSize(QSize(50,50))
+            btn.setStyleSheet("QPushButton { border: none; }")
+            btn.setEnabled(True)
+            btn.clicked.connect(self.rate_Button_clicked)
+
+        # self.star_Button = StarButton('', self)
+        # self.star_Button.setStyleSheet("QPushButton { border: none; } QPushButton { image: url('star_empty.png'); } QPushButton:hover { image: url('star_filled.png'); }")
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
