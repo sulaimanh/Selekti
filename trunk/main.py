@@ -499,8 +499,6 @@ class Ui_Train(QtGui.QMainWindow):
             btn.setEnabled(True)
             btn.clicked.connect(self.rate_Button_clicked)
 
-        # self.star_Button = StarButton('', self)
-        # self.star_Button.setStyleSheet("QPushButton { border: none; } QPushButton { image: url('star_empty.png'); } QPushButton:hover { image: url('star_filled.png'); }")
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
