@@ -498,7 +498,13 @@ class Ui_Train(QtGui.QMainWindow):
             btn.setIconSize(QSize(50,50))
             btn.setStyleSheet("QPushButton { border: none; }")
             btn.setEnabled(True)
-            btn.clicked.connect(self.rate_Button_clicked)
+
+        # Clicking a star will rate the image with the level of the star
+        self.star_1.clicked.connect(lambda: self.rate_Button_clicked(1))
+        self.star_2.clicked.connect(lambda: self.rate_Button_clicked(2))
+        self.star_3.clicked.connect(lambda: self.rate_Button_clicked(3))
+        self.star_4.clicked.connect(lambda: self.rate_Button_clicked(4))
+        self.star_5.clicked.connect(lambda: self.rate_Button_clicked(5))
 
         # when the current star is hovered over, all the stars to its left
         # should also be highlighted 
@@ -578,7 +584,7 @@ class Ui_Train(QtGui.QMainWindow):
 
             print("[INFO] SKIP btn clicked. Next image should be visible.")
 
-    def rate_Button_clicked(self): 
+    def rate_Button_clicked(self, starNumber): 
 
         if self.current_img == None:
             print("[INFO] No image to rate.")
@@ -590,7 +596,7 @@ class Ui_Train(QtGui.QMainWindow):
 
         # Add the scored image to imgs_scored
         imgScored = {'imgPath': self.current_img['imgPath'],
-                     'imgScore': -1 }
+                     'imgScore': starNumber }
         self.imgs_scored.append(imgScored)
 
 
