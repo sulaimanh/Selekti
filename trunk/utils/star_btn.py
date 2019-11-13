@@ -7,7 +7,9 @@ from PyQt4.QtCore import QEvent
 
 
 class StarButton(QPushButton):
-    """ """
+    """ A star is empty (gray) by defualt. When the mouse hovers over a star,
+    the star is filled with a juicy yellow color. All the stars to the left of this
+    star will also be filled."""
 
     def initStarList(self):
         """ each star to the left of the current star will share its state"""
