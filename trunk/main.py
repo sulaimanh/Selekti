@@ -18,6 +18,7 @@ from handlers.data_generator import TestDataGenerator
 from utils.utils import calc_mean_score
 from personalModel.personal_model import PersonalModel
 from utils.slider import Slider
+from utils.star_btn import StarButton
 import os, sys
 from os import path
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
@@ -452,12 +453,9 @@ class Ui_Train(QtGui.QMainWindow):
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
         
-        self.rate_Button = QtGui.QPushButton('Rate', self)
-        self.rate_Button.setGeometry(QtCore.QRect(400, 510, 100, 30))
-        self.rate_Button.clicked.connect(self.rate_Button_clicked)
 
         self.skip_Button = QtGui.QPushButton('Skip', self)
-        self.skip_Button.setGeometry(QtCore.QRect(250, 510, 100, 30))
+        self.skip_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
         self.skip_Button.clicked.connect(self.skip_Button_clicked)
 
         self.rate_label = QtGui.QLabel(self)
@@ -466,17 +464,67 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
-        self.rate_Slider = Slider(Qt.Horizontal, self)
-        self.rate_Slider.setGeometry(QtCore.QRect(100, 480, 700, 30))
-        self.rate_Slider.setMinimum(1)
-        self.rate_Slider.setMaximum(10)
-        self.rate_Slider.setValue(0)
-        self.rate_Slider.setTickPosition(QSlider.TicksBelow)
-        self.rate_Slider.setTickInterval(1)
-        self.rate_Slider.valueChanged[int].connect(self.on_rate_value_changed)
+        star_empty = QPixmap("star_empty.png")
+        star_filled = QPixmap("star_filled.png")
+        star_size = star_empty.rect().size()
+
+        stars = []
+
+        # Make the stars and position them
+        self.star_1 = StarButton('', self)
+        self.star_1.setGeometry(QtCore.QRect(200, 500, 97, 27))
+        self.star_2 = StarButton('', self)
+        self.star_2.setGeometry(QtCore.QRect(300, 500, 97, 27))
+        self.star_3 = StarButton('', self)
+        self.star_3.setGeometry(QtCore.QRect(400, 500, 97, 27))
+        self.star_4 = StarButton('', self)
+        self.star_4.setGeometry(QtCore.QRect(500, 500, 97, 27))
+        self.star_5 = StarButton('', self)
+        self.star_5.setGeometry(QtCore.QRect(600, 500, 97, 27))
+
+        stars.append(self.star_1)
+        stars.append(self.star_2)
+        stars.append(self.star_3)
+        stars.append(self.star_4)
+        stars.append(self.star_5)
+
+        # Ideally all this stuff would go into StarButton's constructor but I couldn't find out how to override it properly
+        for btn in stars:
+            btn.initStarList()
+            btn.setIcon(QIcon(star_empty))
+            btn.setDefaultIcon(QIcon(star_empty))
+            btn.setOnHoverIcon(QIcon(star_filled))
+            btn.setFixedSize(star_size)
+            btn.setIconSize(QSize(50,50))
+            btn.setStyleSheet("QPushButton { border: none; }")
+            btn.setEnabled(True)
+
+        # Clicking a star will rate the image with the level of the star
+        self.star_1.clicked.connect(lambda: self.rate_Button_clicked(1))
+        self.star_2.clicked.connect(lambda: self.rate_Button_clicked(2))
+        self.star_3.clicked.connect(lambda: self.rate_Button_clicked(3))
+        self.star_4.clicked.connect(lambda: self.rate_Button_clicked(4))
+        self.star_5.clicked.connect(lambda: self.rate_Button_clicked(5))
+
+        # when the current star is hovered over, all the stars to its left
+        # should also be highlighted 
+        self.star_2.addDependentStar(self.star_1)
+
+        self.star_3.addDependentStar(self.star_1)
+        self.star_3.addDependentStar(self.star_2)
+
+        self.star_4.addDependentStar(self.star_1)
+        self.star_4.addDependentStar(self.star_2)
+        self.star_4.addDependentStar(self.star_3)
+
+        self.star_5.addDependentStar(self.star_1)
+        self.star_5.addDependentStar(self.star_2)
+        self.star_5.addDependentStar(self.star_3)
+        self.star_5.addDependentStar(self.star_4)
+
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
-        self.finish_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
+        self.finish_Button.setGeometry(QtCore.QRect(600, 560, 100, 30))
         self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
@@ -536,7 +584,7 @@ class Ui_Train(QtGui.QMainWindow):
 
             print("[INFO] SKIP btn clicked. Next image should be visible.")
 
-    def rate_Button_clicked(self): 
+    def rate_Button_clicked(self, starNumber): 
 
         if self.current_img == None:
             print("[INFO] No image to rate.")
@@ -548,7 +596,7 @@ class Ui_Train(QtGui.QMainWindow):
 
         # Add the scored image to imgs_scored
         imgScored = {'imgPath': self.current_img['imgPath'],
-                     'imgScore': self.rate_Slider.value()}
+                     'imgScore': starNumber }
         self.imgs_scored.append(imgScored)
 
 
