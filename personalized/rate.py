@@ -20,15 +20,12 @@ dstCSV = "output/csv"
 # When training a new set of images in the all-images folder,
 # its necessary to discard the previous images
 if os.path.exists(dstTest):
-	shutil.rmtree(dstTest)
-	shutil.rmtree(dstTrain)
-	shutil.rmtree(dstCSV)
-	shutil.rmtree(ratedFolder)
-
-os.mkdir(dstTest)
-os.mkdir(dstTrain)
-os.mkdir(dstCSV)
-os.mkdir(ratedFolder)
+	print("Files exist")
+else:
+	os.mkdir(dstTest)
+	os.mkdir(dstTrain)
+	os.mkdir(dstCSV)
+	os.mkdir(ratedFolder)
 
 
 ratedImages = []
@@ -46,8 +43,7 @@ for imagePath in imagePaths:
 	if score not in (1,2,3,4,5):
 		break
 	im.close()
-	shutil.copy(imagePath, ratedFolder)
-	os.remove(imagePath)
+	shutil.move(imagePath, ratedFolder)
 	print("----------------------------------------------------------------------------------------------\n")
 	scoreList.append(score)
 	imageName = imagePath[18:]
@@ -63,7 +59,7 @@ trainingScore = scoreList[:train]
 
 csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv", "training-personalized-ratings.csv"])
 if os.path.exists(csvPath):
-	csv = open(csvPath, "+a")
+	csv = open(csvPath, "a")
 else:
 	csv = open(csvPath, "w")
 
@@ -80,7 +76,7 @@ testingScore = scoreList[train:]
 
 csvPath = os.path.sep.join([config.BASE_CSV_PATH, "csv", "testing-personalized-ratings.csv"])
 if os.path.exists(csvPath):
-	csv = open(csvPath, "+a")	
+	csv = open(csvPath, "a")	
 else:
 	csv = open(csvPath, "w")
 for (image,score) in zip(testing,testingScore):
