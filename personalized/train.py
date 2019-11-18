@@ -57,12 +57,13 @@ print("[INFO] loading data...")
 
 # train the model
 print("[INFO] training model...")
-model = LogisticRegression(solver="lbfgs", multi_class="multinomial")
+model = LogisticRegression(solver="newton-cg", multi_class="multinomial")
 model.fit(trainX, trainY)
 
 # evaluate the model
 print("[INFO] evaluating...")
 preds = model.predict(testX)
+
 print(classification_report(testY, preds))
 print("Accuracy: {}".format(accuracy_score(testY, preds)))
 
@@ -71,3 +72,4 @@ print("[INFO] saving model...")
 f = open(config.MODEL_PATH, "wb")
 f.write(pickle.dumps(model))
 f.close()
+    

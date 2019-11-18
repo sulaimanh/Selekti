@@ -27,7 +27,7 @@ else:
 	os.mkdir(dstCSV)
 	os.mkdir(ratedFolder)
 
-
+print(len(imagePaths))
 ratedImages = []
 scoreList = []
 
@@ -37,6 +37,7 @@ for imagePath in imagePaths:
 	# print(score)
 	print("\n----------------------------------------------------------------------------------------------")
 	print("Please rate the images on this scale \n 1 - 5")
+	print("Please select a number greater than 5 to finish")
 	im = Image.open(imagePath)
 	im.show()
 	score = int(input("{}:\t".format(imagePath)))
@@ -62,10 +63,10 @@ if os.path.exists(csvPath):
 	csv = open(csvPath, "a")
 else:
 	csv = open(csvPath, "w")
-
+	
 for (image,score) in zip(training,trainingScore):
-	print(image)
-	shutil.copy(image, dstTrain)
+	print(image+"")
+	shutil.move(image, dstTrain)
 	csv.write("{},{}\n".format(score, image))
 csv.close()
 
@@ -80,6 +81,6 @@ if os.path.exists(csvPath):
 else:
 	csv = open(csvPath, "w")
 for (image,score) in zip(testing,testingScore):
-	shutil.copy(image, dstTest)
+	shutil.move(image, dstTest)
 	csv.write("{},{}\n".format(score, image))
 csv.close()
