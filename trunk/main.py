@@ -181,10 +181,10 @@ class Ui_Selekti(QtGui.QMainWindow):
         
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
-        self.instructions_msg.setText("How to Get Started:")
-        self.instructions_msg.setInformativeText("This software is used to compare images to distinguish which are more aesthetically pleasing to the user. \n\n1. To begin, start by going to the 'File' dropdown menu option on the top left and selecting 'Browse'. Choose a directory filled with images you would like to use to train the algorithm as well as sort out good images from the bad ones!\n\n2. Select 'Train' and begin training the algorithm by dragging the slider to rate the image. The more feedback you give, the more the algorithm learns.\n\n3. Once you are done, return to the main screen and press 'Start'. The algorithm will begin processing each photo and put the results in a new directory.")
+        self.instructions_msg.setInformativeText("In the top left corner, click File then Browse. Choose a directory full of JPG images. \n\nClick Start if you want to get the top photos from your chosen directory copied into a new directory.\n\nClick Train if you want to improve the algorithm. You’ll be prompted to rate your photos from 1 to 5.")
         self.instructions_msg.setWindowTitle("How to Get Started")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
+        self.instructions_msg.setIcon(QMessageBox.Information)
         retval = self.instructions_msg.exec_()
 
     def is_first_time_use(self):
