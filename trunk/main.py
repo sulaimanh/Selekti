@@ -452,11 +452,6 @@ class Ui_Train(QtGui.QMainWindow):
         # Menu selections that show on the menubar on the Selekti screen
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
-        
-
-        self.skip_Button = QtGui.QPushButton('Skip', self)
-        self.skip_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
-        self.skip_Button.clicked.connect(self.skip_Button_clicked)
 
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
@@ -572,18 +567,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.maximized_window.setLayout(self.maximized_vbox)
         self.maximized_window.show()
 
-    def skip_Button_clicked(self):
-        self.current_img = self.get_next_image(self.imgs_unscored)
-        if  self.current_img == None:
-            print("[INFO] No image to skip.")
-        else:
-            im = Image.open(open(self.current_img['imgPath'], 'rb'))
-
-            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
-            self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
-
-            print("[INFO] SKIP btn clicked. Next image should be visible.")
-
     def rate_Button_clicked(self, starNumber): 
 
         if self.current_img == None:
@@ -665,7 +648,7 @@ class Ui_Train(QtGui.QMainWindow):
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
         self.instructions_msg.setText("Training the Algorithm:")
-        self.instructions_msg.setInformativeText("In order to improve the quality of the filtered images, the user can train the algorithm to give more desirable results. This can be done by dragging the slider to rate the image according to the user's preference.\n\n1. Drag the slider left or right depending on how much you like/dislike the photo.\n\n2. Press the 'Rate' button to confirm your choice. If you are unsure about a certain photo, press 'Skip' to display a new photo.\n\n3. Press finish when you are done training.")
+        self.instructions_msg.setInformativeText("To help us better understand your tastes, rate your photos on a scale of 1 to 5! \n\nClick on a star to indicate how much you like each photo. \n\nWhen you’re done rating, click Finish.")
         self.instructions_msg.setWindowTitle("Training")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         retval = self.instructions_msg.exec_()
