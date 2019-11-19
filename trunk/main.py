@@ -452,11 +452,6 @@ class Ui_Train(QtGui.QMainWindow):
         # Menu selections that show on the menubar on the Selekti screen
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
-        
-
-        # self.skip_Button = QtGui.QPushButton('Skip', self)
-        # self.skip_Button.setGeometry(QtCore.QRect(400, 560, 100, 30))
-        # self.skip_Button.clicked.connect(self.skip_Button_clicked)
 
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
@@ -571,18 +566,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.maximized_vbox.addWidget(self.maximized_image_label)
         self.maximized_window.setLayout(self.maximized_vbox)
         self.maximized_window.show()
-
-    def skip_Button_clicked(self):
-        self.current_img = self.get_next_image(self.imgs_unscored)
-        if  self.current_img == None:
-            print("[INFO] No image to skip.")
-        else:
-            im = Image.open(open(self.current_img['imgPath'], 'rb'))
-
-            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
-            self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
-
-            print("[INFO] SKIP btn clicked. Next image should be visible.")
 
     def rate_Button_clicked(self, starNumber): 
 
