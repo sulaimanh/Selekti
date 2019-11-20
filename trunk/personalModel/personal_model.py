@@ -47,11 +47,10 @@ class PersonalModel:
 
         return feature_vec
 
-    def feedModel(self, featVec, score):
+    def trainModel(self, featVecs, scores):
 
-        # model.fit usually works with batches but we're gonna train 
-        # one sample at a time. So the data needs a little reshaping...
-        featVec = np.array(featVec)
-        score = np.array([score])
+        featVecs = np.array(featVecs)
+        featVecs = np.squeeze(featVecs)
+        scores = np.array(scores)
 
-        self.model.fit(featVec, score)
+        self.model.fit(featVecs, scores)

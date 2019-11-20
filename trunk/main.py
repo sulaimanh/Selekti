@@ -655,6 +655,17 @@ class Ui_Train(QtGui.QMainWindow):
         else:
             self.show()
 
+        featvecs = []
+        scores = []
+
+        for dhash,datum in self.feedback.items():
+            scores.append(datum[0])
+            featvecs.append(datum[1])
+            print("[INFO] datum[1]: {}".format(datum[1]))
+        
+        print("[INFO] PM training commenced.")
+        self.model.trainModel(featvecs, scores)
+
         # Save the feedback dict    
         f = open(self.feedback_path, "wb")
         f.write(pickle.dumps(self.feedback))
