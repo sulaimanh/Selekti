@@ -596,7 +596,10 @@ class Ui_Train(QtGui.QMainWindow):
         # If the user has already rated this image, the new score overwrites the old one
         dhasher = DHash()
         difference_hash = dhasher.encode_image(image_file = self.current_img['imgPath'])
-        self.feedback[difference_hash] = starNumber
+
+        f_vec = self.model.getFeatureVector(self.current_img['imgPath'])  
+
+        self.feedback[difference_hash] = (starNumber, f_vec)
 
 
         print("[INFO] List of scored images:")
