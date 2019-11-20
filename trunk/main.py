@@ -28,6 +28,7 @@ import math
 import glob
 import json
 import shutil
+import pickle
 
 # try:
 #     _fromUtf8 = QtCore.QString.fromUtf8
@@ -535,6 +536,16 @@ class Ui_Train(QtGui.QMainWindow):
             self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
 
+        # Feedback consists of the user's score for an image along with that image's feature vector
+        # It's stored in a dictionary where the feat vectors are the keys and the scores are the values
+        self.feedback_path = "feedback.cpickle"
+        if os.path.isfile(self.feedback_path):
+            feedback_file = open(self.feedback_path, "rb")
+            self.feedback = pickle.load(feedback_file)
+            feedback_file.close()
+        else:
+            self.feedback = {}
+
         self.show()
 
     def get_next_image(self, imageList):
@@ -579,10 +590,10 @@ class Ui_Train(QtGui.QMainWindow):
         self.imgs_scored.append(imgScored)
 
 
-        # Train the user's personal model by feeding it the feature vector
-        # of the image the user just scored, along with the score.
+        # Store the image's feature vector and user score in the feedback dict
+        # If the user has already rated this image, the new score overwrites the old one
         f_vec = self.model.getFeatureVector(self.current_img['imgPath'])        
-        self.model.feedModel(f_vec, imgScored['imgScore'])
+        self.feedback[f_vec] = starNumber
 
 
         print("[INFO] List of scored images:")
@@ -638,8 +649,11 @@ class Ui_Train(QtGui.QMainWindow):
         else:
             self.show()
 
-        self.model.saveModel()
-        print("[INFO] Model finished saving")
+        # Save the feedback dict    
+        f = open(self.feedback_path, "wb")
+        f.write(pickle.dumps(self.feedback))
+        f.close()
+        print("[INFO] Finished saving feedback")
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
