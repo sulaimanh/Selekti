@@ -21,6 +21,7 @@ from utils.slider import Slider
 from utils.star_btn import StarButton
 import os, sys
 from os import path
+from imagededup.methods import DHash
 QtCore.QCoreApplication.addLibraryPath(path.join(path.dirname(QtCore.__file__), "plugins"))
 QtGui.QImageReader.supportedImageFormats()
 import random
@@ -542,6 +543,7 @@ class Ui_Train(QtGui.QMainWindow):
         if os.path.isfile(self.feedback_path):
             feedback_file = open(self.feedback_path, "rb")
             self.feedback = pickle.load(feedback_file)
+            print("[INFO] feedback on OPEN: {}".format(self.feedback))
             feedback_file.close()
         else:
             self.feedback = {}
@@ -590,10 +592,11 @@ class Ui_Train(QtGui.QMainWindow):
         self.imgs_scored.append(imgScored)
 
 
-        # Store the image's feature vector and user score in the feedback dict
+        # Compute hash for the image to prevent duplicates 
         # If the user has already rated this image, the new score overwrites the old one
-        f_vec = self.model.getFeatureVector(self.current_img['imgPath'])        
-        self.feedback[f_vec] = starNumber
+        dhasher = DHash()
+        difference_hash = dhasher.encode_image(image_file = self.current_img['imgPath'])
+        self.feedback[difference_hash] = starNumber
 
 
         print("[INFO] List of scored images:")
@@ -653,7 +656,7 @@ class Ui_Train(QtGui.QMainWindow):
         f = open(self.feedback_path, "wb")
         f.write(pickle.dumps(self.feedback))
         f.close()
-        print("[INFO] Finished saving feedback")
+        print("[INFO] feedback on FINISH: {}".format(self.feedback))
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
