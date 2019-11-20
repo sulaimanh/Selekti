@@ -543,7 +543,7 @@ class Ui_Train(QtGui.QMainWindow):
         if os.path.isfile(self.feedback_path):
             feedback_file = open(self.feedback_path, "rb")
             self.feedback = pickle.load(feedback_file)
-            print("[INFO] feedback on OPEN: {}".format(self.feedback))
+            # print("[INFO] feedback on OPEN: {}".format(self.feedback))
             feedback_file.close()
         else:
             self.feedback = {}
@@ -602,8 +602,8 @@ class Ui_Train(QtGui.QMainWindow):
         self.feedback[difference_hash] = (starNumber, f_vec)
 
 
-        print("[INFO] List of scored images:")
-        print(json.dumps(self.imgs_scored, indent=2))
+        # print("[INFO] List of scored images:")
+        # print(json.dumps(self.imgs_scored, indent=2))
 
         # Move on to next pic
         self.current_img = self.get_next_image(self.imgs_unscored)
@@ -659,7 +659,7 @@ class Ui_Train(QtGui.QMainWindow):
         f = open(self.feedback_path, "wb")
         f.write(pickle.dumps(self.feedback))
         f.close()
-        print("[INFO] feedback on FINISH: {}".format(self.feedback))
+        # print("[INFO] feedback on FINISH: {}".format(self.feedback))
 
     def instructions_Button_clicked(self):
         self.instructions_msg = QMessageBox()
