@@ -417,7 +417,6 @@ class Ui_Selekti(QtGui.QMainWindow):
 
 class Ui_Train(QtGui.QMainWindow):
     imgs = []
-    next_image_count = 0
     imgs_scored = []
     imgs_unscored = []
     isTrainWindowShown = True
@@ -540,23 +539,20 @@ class Ui_Train(QtGui.QMainWindow):
 
     def get_next_image(self, imageList):
         if not imageList:
-            return None
-        # Index through each image in the imageList. Reset if they reached the end of the list
-        if self.next_image_count < len(imageList)-1:
-            self.next_image_count += 1
-        else:
-            self.next_image_count = 0
 
             self.all_images_rated_msg = QMessageBox.question(self, "Amazing!", 
             "Wow! You went through all the images! Would you want to start over and rate them again?", QMessageBox.Yes, QMessageBox.No)
             # self.all_images_rated_msg.setWindowTitle("Amazing!")
+
             if self.all_images_rated_msg == QtGui.QMessageBox.Yes:
                 print("Start list over")
             else:
                 self.all_images_rated_msg = self.finish_Button_clicked()
                 print("Go back to main menu")
-                
-        return imageList[self.next_image_count]
+
+            return None
+
+        return imageList[0]
 
     def train_image_clicked(self, event):
         self.maximized_window = QWidget()
