@@ -1,1 +1,4 @@
 test_files/
+trunk/browse_cache.txt
+trunk/imported_files_cache.txt
+trunk/personalModel/model.cpickle
