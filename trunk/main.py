@@ -54,6 +54,7 @@ class Ui_Selekti(QtGui.QMainWindow):
     def __init__(self, parent=None):
         super(Ui_Selekti, self).__init__(parent)
         self.setWindowTitle(("Selekti"))
+        self.setWindowIcon(QtGui.QIcon('the-icon.ico'))
         self.WINDOW_WIDTH = 900
         self.WINDOW_HEIGHT = 630
         self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
@@ -541,6 +542,7 @@ class Ui_Train(QtGui.QMainWindow):
         if not imageList:
 
             self.all_images_rated_msg = QtGui.QMessageBox()
+            self.all_images_rated_msg.setWindowIcon(QtGui.QIcon('the-icon.ico'))
             self.all_images_rated_msg.setWindowTitle("Amazing!")
             self.all_images_rated_msg.setText("You rated all the images!")
             finish_button = self.all_images_rated_msg.addButton('Finish', QtGui.QMessageBox.YesRole)
