@@ -83,25 +83,15 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.sub_directories_progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
-        
-        if self.is_first_time_use():
-            self.start_Button.setEnabled(False)
-        else:
-            self.start_Button.setEnabled(True)
-
+        self.start_Button.setEnabled(False)
         self.start_Button.setGeometry(QtCore.QRect(300, 480, 97, 27))
         self.start_Button.clicked.connect(self.start_Button_clicked)
+        
         self.train_Button = QtGui.QPushButton('Train', self)
         self.train_Button.setEnabled(False)
-        
-        if self.is_first_time_use():
-            self.train_Button.setEnabled(False)
-        else:
-            self.train_Button.setEnabled(True)
-
         self.train_Button.setGeometry(QtCore.QRect(500, 480, 97, 27))
-        self.train_Button.clicked.connect(self.train_Button_clicked)            
-        
+        self.train_Button.clicked.connect(self.train_Button_clicked)         
+           
         self.mainMenu = self.menuBar()
 
         # Actions which can be seen from the drop-down of each menu selection
