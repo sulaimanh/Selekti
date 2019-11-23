@@ -85,11 +85,13 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.start_Button = QtGui.QPushButton('Start', self)
         self.start_Button.setEnabled(False)
         self.start_Button.setGeometry(QtCore.QRect(300, 480, 97, 27))
+        self.start_Button.setToolTip("Choose a directory to use this!")
         self.start_Button.clicked.connect(self.start_Button_clicked)
         
         self.train_Button = QtGui.QPushButton('Train', self)
         self.train_Button.setEnabled(False)
         self.train_Button.setGeometry(QtCore.QRect(500, 480, 97, 27))
+        self.train_Button.setToolTip("Choose a directory to use this!")
         self.train_Button.clicked.connect(self.train_Button_clicked)         
            
         self.mainMenu = self.menuBar()
@@ -294,6 +296,8 @@ class Ui_Selekti(QtGui.QMainWindow):
                 # Only enables the train and start button if there are any images imported
                 self.train_Button.setEnabled(True)
                 self.start_Button.setEnabled(True)
+                self.train_Button.setToolTip("Rate your photos to improve the selection algortihm.")
+                self.start_Button.setToolTip("Starts analyzing photos from your chosen directory.")
             else:
                 # If the user imported a directory before and updated the ui main image,
                 # they shouldn't see the image from the last import
