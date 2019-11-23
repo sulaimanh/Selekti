@@ -180,7 +180,8 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.instructions_msg.setWindowTitle("How to Get Started")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         self.instructions_msg.setIcon(QMessageBox.Information)
-        retval = self.instructions_msg.exec_()
+        self.instructions_msg.setModal(False)
+        self.instructions_msg.show()
 
     def is_first_time_use(self):
         # Reads in the directory
