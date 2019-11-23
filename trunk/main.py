@@ -83,25 +83,17 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.sub_directories_progressBar.setVisible(False)
 
         self.start_Button = QtGui.QPushButton('Start', self)
-        
-        if self.is_first_time_use():
-            self.start_Button.setEnabled(False)
-        else:
-            self.start_Button.setEnabled(True)
-
+        self.start_Button.setEnabled(False)
         self.start_Button.setGeometry(QtCore.QRect(300, 480, 97, 27))
+        self.start_Button.setToolTip("Choose a directory to use this!")
         self.start_Button.clicked.connect(self.start_Button_clicked)
+        
         self.train_Button = QtGui.QPushButton('Train', self)
         self.train_Button.setEnabled(False)
-        
-        if self.is_first_time_use():
-            self.train_Button.setEnabled(False)
-        else:
-            self.train_Button.setEnabled(True)
-
         self.train_Button.setGeometry(QtCore.QRect(500, 480, 97, 27))
-        self.train_Button.clicked.connect(self.train_Button_clicked)            
-        
+        self.train_Button.setToolTip("Choose a directory to use this!")
+        self.train_Button.clicked.connect(self.train_Button_clicked)         
+           
         self.mainMenu = self.menuBar()
 
         # Actions which can be seen from the drop-down of each menu selection
@@ -188,7 +180,8 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.instructions_msg.setWindowTitle("How to Get Started")
         self.instructions_msg.setStandardButtons(QMessageBox.Ok)
         self.instructions_msg.setIcon(QMessageBox.Information)
-        retval = self.instructions_msg.exec_()
+        self.instructions_msg.setModal(False)
+        self.instructions_msg.show()
 
     def is_first_time_use(self):
         # Reads in the directory
@@ -304,6 +297,8 @@ class Ui_Selekti(QtGui.QMainWindow):
                 # Only enables the train and start button if there are any images imported
                 self.train_Button.setEnabled(True)
                 self.start_Button.setEnabled(True)
+                self.train_Button.setToolTip("Rate your photos to improve the selection algortihm.")
+                self.start_Button.setToolTip("Starts analyzing photos from your chosen directory.")
             else:
                 # If the user imported a directory before and updated the ui main image,
                 # they shouldn't see the image from the last import
