@@ -100,18 +100,12 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.browseAction = QtGui.QAction("&Browse..", self)
         self.browseAction.triggered.connect(self.browse_Button_clicked)
 
-        self.warningsAction = QtGui.QAction("&Warnings", self)
-        self.warningsAction.triggered.connect(self.warnings_Button_clicked)
-
         self.instructionsAction = QtGui.QAction("&Instructions", self)
         self.instructionsAction.triggered.connect(self.instructions_Button_clicked)
 
         # Menu selections that show on the menubar on the Selekti screen
         self.fileMenu = self.mainMenu.addMenu('&File')
         self.fileMenu.addAction(self.browseAction)
-
-        self.warningsMenu = self.mainMenu.addMenu('&Warnings')
-        self.warningsMenu.addAction(self.warningsAction)
 
         self.helpMenu = self.mainMenu.addMenu('&Help')
         self.helpMenu.addAction(self.instructionsAction)
@@ -442,13 +436,6 @@ class Ui_Train(QtGui.QMainWindow):
         # print(json.dumps(self.imgs_unscored, indent=2))
 
         self.mainMenu = self.menuBar()
-        # Actions which can be seen from the drop-down of each menu selection
-        self.instructionsAction = QtGui.QAction("&Instructions", self)
-        self.instructionsAction.triggered.connect(self.instructions_Button_clicked)
-
-        # Menu selections that show on the menubar on the Selekti screen
-        self.helpMenu = self.mainMenu.addMenu('&Help')
-        self.helpMenu.addAction(self.instructionsAction)
 
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
