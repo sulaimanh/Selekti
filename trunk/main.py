@@ -213,7 +213,7 @@ class Ui_Selekti(QtGui.QMainWindow):
             self.browsing_cache.writelines(self.selected_directory)
             self.browsing_cache.close() 
             
-            self.current_directory_progressBar.setVisible(True)
+            # self.current_directory_progressBar.setVisible(True)
             self.sub_directories_progressBar.setVisible(True)
 
         # clears the cache
@@ -230,8 +230,8 @@ class Ui_Selekti(QtGui.QMainWindow):
         self.current_directory_progressBar.setValue(self.current_directory_progress)
         self.sub_directories_progressBar.setValue(self.sub_directory_progress)
         
-        self.current_directory_label.setText("Importing Files from " + self.selected_directory)
-        self.current_directory_label.setVisible(True)
+        # self.current_directory_label.setText("Importing Files from " + self.selected_directory)
+        # self.current_directory_label.setVisible(True)
         self.size_of_selected_directory = len(os.listdir(self.selected_directory))
         
 
@@ -307,7 +307,7 @@ class Ui_Selekti(QtGui.QMainWindow):
                 self.imported_files_cache.write('\n')
             self.imported_files_cache.close()
 
-            self.current_directory_label.setText("Completed Importing Files from: " + self.selected_directory)
+            # self.current_directory_label.setText("Completed Importing Files from: " + self.selected_directory)
             self.sub_directories_label.setText("Completed Importing Files from: " + root)
             self.current_directory_progressBar.setValue(math.ceil(100))
             self.sub_directories_progressBar.setValue(math.ceil(100))
