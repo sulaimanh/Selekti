@@ -517,7 +517,7 @@ class Ui_Train(QtGui.QMainWindow):
             # click on the train image
             self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
             self.train_imageLabel.setObjectName('train_imageLabel')
-            self.train_imageLabel.mousePressEvent = self.train_image_clicked
+            # self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
 
         # Feedback consists of the user's score for an image along with that image's feature vector
