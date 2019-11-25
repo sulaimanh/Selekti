@@ -451,15 +451,15 @@ class Ui_Train(QtGui.QMainWindow):
 
         # Make the stars and position them
         self.star_1 = StarButton('', self)
-        self.star_1.setGeometry(QtCore.QRect(200, 500, 97, 27))
+        self.star_1.setGeometry(QtCore.QRect(225, 500, 97, 27))
         self.star_2 = StarButton('', self)
-        self.star_2.setGeometry(QtCore.QRect(300, 500, 97, 27))
+        self.star_2.setGeometry(QtCore.QRect(325, 500, 97, 27))
         self.star_3 = StarButton('', self)
-        self.star_3.setGeometry(QtCore.QRect(400, 500, 97, 27))
+        self.star_3.setGeometry(QtCore.QRect(425, 500, 97, 27))
         self.star_4 = StarButton('', self)
-        self.star_4.setGeometry(QtCore.QRect(500, 500, 97, 27))
+        self.star_4.setGeometry(QtCore.QRect(525, 500, 97, 27))
         self.star_5 = StarButton('', self)
-        self.star_5.setGeometry(QtCore.QRect(600, 500, 97, 27))
+        self.star_5.setGeometry(QtCore.QRect(625, 500, 97, 27))
 
         stars.append(self.star_1)
         stars.append(self.star_2)
@@ -503,7 +503,7 @@ class Ui_Train(QtGui.QMainWindow):
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
-        self.finish_Button.setGeometry(QtCore.QRect(600, 560, 100, 30))
+        self.finish_Button.setGeometry(QtCore.QRect(670, 580, 100, 30))
         self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
