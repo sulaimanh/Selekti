@@ -390,6 +390,8 @@ class Ui_Selekti(QtGui.QMainWindow):
             shutil.copy(sample['image_path'], self.new_dir)
             i += 1
 
+        SelfDestructingBox.showWithTimeout(10, "Your photos have been analyzed.\nA new directory with the best photos was created in the directory you chose.", "All Done!")
+        
         print("[INFO] Done copying into new dir.")
 
         #TODO: Notify user of the new directory or open it for them 
