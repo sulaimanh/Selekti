@@ -170,13 +170,10 @@ class Ui_Selekti(QtGui.QMainWindow):
             self.show()
         
     def instructions_Button_clicked(self):
-        self.instructions_msg = QMessageBox()
-        self.instructions_msg.setInformativeText("In the top left corner, click File then Browse. Choose a directory full of JPG images. \n\nClick Start if you want to get the top photos from your chosen directory copied into a new directory.\n\nClick Train if you want to improve the algorithm. You’ll be prompted to rate your photos from 1 to 5.")
-        self.instructions_msg.setWindowTitle("How to Get Started")
-        self.instructions_msg.setStandardButtons(QMessageBox.Ok)
-        self.instructions_msg.setIcon(QMessageBox.Information)
-        self.instructions_msg.setModal(False)
-        self.instructions_msg.show()
+        QMessageBox.information(self,
+        "How to Get Started", 
+        "In the top left corner, click File then Browse. Choose a directory full of JPG images. \n\nClick Start if you want to get the top photos from your chosen directory copied into a new directory.\n\nClick Train if you want to improve the algorithm. You’ll be prompted to rate your photos from 1 to 5.",
+        )
 
     def is_first_time_use(self):
         # Reads in the directory
