@@ -447,6 +447,14 @@ class Ui_Train(QtGui.QMainWindow):
 
         self.mainMenu = self.menuBar()
 
+        # Actions which can be seen from the drop-down of each menu selection	
+        self.instructionsAction = QtGui.QAction("&Instructions", self)	
+        self.instructionsAction.triggered.connect(self.instructions_Button_clicked)	
+
+        # Menu selections that show on the menubar on the Selekti screen	
+        self.helpMenu = self.mainMenu.addMenu('&Help')	
+        self.helpMenu.addAction(self.instructionsAction)
+
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
         self.rate_label.setStyleSheet("QLabel { color: white; font: 18px; }")
@@ -667,12 +675,10 @@ class Ui_Train(QtGui.QMainWindow):
         # print("[INFO] feedback on FINISH: {}".format(self.feedback))
 
     def instructions_Button_clicked(self):
-        self.instructions_msg = QMessageBox()
-        self.instructions_msg.setText("Training the Algorithm:")
-        self.instructions_msg.setInformativeText("To help us better understand your tastes, rate your photos on a scale of 1 to 5! \n\nClick on a star to indicate how much you like each photo. \n\nWhen you’re done rating, click Finish.")
-        self.instructions_msg.setWindowTitle("Training")
-        self.instructions_msg.setStandardButtons(QMessageBox.Ok)
-        retval = self.instructions_msg.exec_()
+        QMessageBox.information(self,
+        "Training", 
+        "To help us better understand your tastes, rate your photos on a scale of 1 to 5! \n\nClick on a star to indicate how much you like each photo. \n\nWhen you’re done (or tired of) rating, click Finish.\n\nIf you exit without clicking Finish, your feedback will not be saved.",
+        )
 
 # Keep track of all successfully imported images.
 class ImageData:
