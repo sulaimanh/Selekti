@@ -19,6 +19,7 @@ from utils.utils import calc_mean_score
 from personalModel.personal_model import PersonalModel
 from utils.slider import Slider
 from utils.star_btn import StarButton
+from utils.self_destructing_box import SelfDestructingBox
 import os, sys
 from os import path
 from imagededup.methods import DHash
@@ -316,6 +317,11 @@ class Ui_Selekti(QtGui.QMainWindow):
 
     def start_Button_clicked(self):
         print('Start Button Clicked')
+
+        SelfDestructingBox.showWithTimeout(10, "Please wait while your images are analyzed.\nA new directory will be created in the directory you chose.", "In progress")
+
+        QApplication.processEvents()
+
         # build model and load weights
         nima = Nima("MobileNet", weights=None)
         nima.build()
