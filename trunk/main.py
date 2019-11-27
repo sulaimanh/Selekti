@@ -318,7 +318,7 @@ class Ui_Selekti(QtGui.QMainWindow):
     def start_Button_clicked(self):
         print('Start Button Clicked')
 
-        SelfDestructingBox.showWithTimeout(10, "Please wait while your images are analyzed.\nA new directory will be created in the directory you chose.", "In progress")
+        SelfDestructingBox.showWithTimeout(10, "Please wait while your images are analyzed.\nAnother message will appear when the process is complete.", "In progress")
 
         QApplication.processEvents()
 
@@ -390,7 +390,12 @@ class Ui_Selekti(QtGui.QMainWindow):
             shutil.copy(sample['image_path'], self.new_dir)
             i += 1
 
-        SelfDestructingBox.showWithTimeout(10, "Your photos have been analyzed.\nA new directory with the best photos was created in the directory you chose.", "All Done!")
+        self.done_msg = QtGui.QMessageBox()
+        self.done_msg.setWindowTitle("Processing Complete!")
+        self.done_msg.setText("The best photos were copied into a new directory.\nYou can find this new directory inside of the directory you initially chose.")
+        self.done_msg.setIcon(QMessageBox.Information)
+        self.done_msg.exec_()
+
         
         print("[INFO] Done copying into new dir.")
 
