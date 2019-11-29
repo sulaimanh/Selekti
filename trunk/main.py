@@ -535,7 +535,7 @@ class Ui_Train(QtGui.QMainWindow):
             # click on the train image
             self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
             self.train_imageLabel.setObjectName('train_imageLabel')
-            # self.train_imageLabel.mousePressEvent = self.train_image_clicked
+            self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
 
         # Feedback consists of the user's score for an image along with that image's feature vector
@@ -570,13 +570,10 @@ class Ui_Train(QtGui.QMainWindow):
         return imageList[0]
 
     def train_image_clicked(self, event):
-        self.maximized_window = QWidget()
-        self.maximized_image_label = QLabel()
-        self.maximized_image_label.setPixmap(QPixmap(self.current_img['imgPath']))
-        self.maximized_vbox = QVBoxLayout()
-        self.maximized_vbox.addWidget(self.maximized_image_label)
-        self.maximized_window.setLayout(self.maximized_vbox)
-        self.maximized_window.show()
+
+        self.image_win = ImageWin(self)
+        self.image_win.setImage(self.current_img['imgPath'])
+        self.image_win.show()
 
     def rate_Button_clicked(self, starNumber): 
 
@@ -677,8 +674,33 @@ class Ui_Train(QtGui.QMainWindow):
     def instructions_Button_clicked(self):
         QMessageBox.information(self,
         "Training", 
-        "To help us better understand your tastes, rate your photos on a scale of 1 to 5! \n\nClick on a star to indicate how much you like each photo. \n\nWhen you’re done (or tired of) rating, click Finish.\n\nIf you exit without clicking Finish, your feedback will not be saved.",
+        "To help us better understand your tastes, rate your photos on a scale of 1 to 5! \n\nClick on a star to indicate how much you like each photo. \n\nClick on an image to view its actual size.\n\nWhen you’re done (or tired of) rating, click Finish.\nIf you exit without clicking Finish, your feedback will not be saved.",
         )
+
+class ImageWin(QtGui.QMainWindow):
+
+    def __init__(self, parent=None):
+        super(ImageWin, self).__init__(parent)
+
+        self.setWindowTitle(("Actual Size"))
+
+
+    def setImage(self, imgPath):
+
+        print("[INFO] ImageWin's cur img path: {}".format(imgPath))
+
+        pixmap = QPixmap(imgPath)
+        width = pixmap.width()
+        height = pixmap.height()
+
+        self.setFixedSize(width, height)
+
+        self.main_imageLabel = QtGui.QLabel(self)
+        self.main_imageLabel.setGeometry(QtCore.QRect(0, 0, pixmap.width(), pixmap.height()))
+        self.main_imageLabel.setPixmap(pixmap)
+        self.main_imageLabel.setAlignment(Qt.AlignVCenter)
+
+
 
 # Keep track of all successfully imported images.
 class ImageData:
