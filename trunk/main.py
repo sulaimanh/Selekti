@@ -461,7 +461,11 @@ class Ui_Selekti(QtGui.QMainWindow):
         return self.new_dir_title
 
     def updateMainImage(self, image):
-        self.main_imageLabel.setPixmap(QPixmap(image))
+        pixmap = QPixmap(image)
+        if pixmap.width() == 0 or pixmap.width() > self.width() or pixmap.height() > self.height():
+            QMessageBox.critical(self, "Uh oh!", "Could not display:\n {}".format(image))
+        else:
+            self.main_imageLabel.setPixmap(pixmap)
         # if self.main_imageLabel.width() > self.WINDOW_WIDTH and self.main_imageLabel.height() > self.WINDOW_HEIGHT:
         #    self.resize(self.main_imageLabel.width(),self.main_imageLabel.height())
 
@@ -480,9 +484,7 @@ class Ui_Train(QtGui.QMainWindow):
         super(Ui_Train, self).__init__(parent)
 
         self.setWindowTitle(("Train"))   
-        self.WINDOW_WIDTH = 900
-        self.WINDOW_HEIGHT = 630
-        self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setWindowState(QtCore.Qt.WindowMaximized)
         self.isTrainWindowShown = True
         self.importedFiles = ImageData(self.imgs, self.isTrainWindowShown)
 
@@ -506,7 +508,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
         self.rate_label.setStyleSheet("QLabel { color: white; font: 18px; }")
-        self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
         star_empty = QPixmap("star_empty.png")
@@ -515,17 +516,12 @@ class Ui_Train(QtGui.QMainWindow):
 
         stars = []
 
-        # Make the stars and position them
+        # Make the stars
         self.star_1 = StarButton('', self)
-        self.star_1.setGeometry(QtCore.QRect(225, 500, 97, 27))
         self.star_2 = StarButton('', self)
-        self.star_2.setGeometry(QtCore.QRect(325, 500, 97, 27))
         self.star_3 = StarButton('', self)
-        self.star_3.setGeometry(QtCore.QRect(425, 500, 97, 27))
         self.star_4 = StarButton('', self)
-        self.star_4.setGeometry(QtCore.QRect(525, 500, 97, 27))
         self.star_5 = StarButton('', self)
-        self.star_5.setGeometry(QtCore.QRect(625, 500, 97, 27))
 
         stars.append(self.star_1)
         stars.append(self.star_2)
@@ -569,19 +565,43 @@ class Ui_Train(QtGui.QMainWindow):
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
-        self.finish_Button.setGeometry(QtCore.QRect(670, 580, 100, 30))
         self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
-        self.train_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
         self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+
+        # need to show the win before trying to access its size below
+        self.show()
+
+        # prevent window minimization
+        self.setFixedSize(self.width(), self.height())
+
+        self.rate_label.setGeometry(QtCore.QRect((self.width()*0.40), (self.height()*0.065), 400, 30))
+        self.finish_Button.setGeometry(QtCore.QRect((self.width()*0.70), (self.height()*0.95), 100, 30))
+
+        self.star_1.setGeometry(QtCore.QRect((self.width()*0.40), (self.height()*0.88), 97, 27))
+        self.star_2.setGeometry(QtCore.QRect((self.width()*0.45), (self.height()*0.88), 97, 27))
+        self.star_3.setGeometry(QtCore.QRect((self.width()*0.50), (self.height()*0.88), 97, 27))
+        self.star_4.setGeometry(QtCore.QRect((self.width()*0.55), (self.height()*0.88), 97, 27))
+        self.star_5.setGeometry(QtCore.QRect((self.width()*0.60), (self.height()*0.88), 97, 27))
+
 
         self.current_img = self.get_next_image(self.imgs_unscored)
         if  self.current_img == None:
             print("[INFO] No images to score.")
         else:
             # click on the train image
-            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            pixmap = QPixmap(self.current_img['imgPath'])
+
+            # sometimes the pixmap is null
+            if pixmap.width() == 0 or pixmap.width() > self.width() or pixmap.height() > self.height():
+                QMessageBox.critical(self, "Uh oh!", "Could not display:\n {}\n\nYou can still rate it by clicking on a star.".format(self.current_img['imgPath']))
+
+            else:
+                print("[INFO] displaying a pixmap")
+                self.train_imageLabel.setPixmap(pixmap)
+                self.train_imageLabel.setGeometry(QtCore.QRect((self.width()/2) - (pixmap.width()/2), (self.height()/2) - (pixmap.height()/2), pixmap.width(), pixmap.height()))
+
             self.train_imageLabel.setObjectName('train_imageLabel')
             self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
@@ -597,7 +617,6 @@ class Ui_Train(QtGui.QMainWindow):
         else:
             self.feedback = {}
 
-        self.show()
 
     def get_next_image(self, imageList):
         if not imageList:
@@ -658,10 +677,9 @@ class Ui_Train(QtGui.QMainWindow):
             print("[INFO] No image to rate.")
             # TODO: Produce dialog informing user end of list acheived
         else:
-            im = Image.open(open(self.current_img['imgPath'], 'rb'))
-
-            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
-            self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+            pixmap = QPixmap(self.current_img['imgPath'])
+            self.train_imageLabel.setPixmap(pixmap)
+            self.train_imageLabel.setGeometry(QtCore.QRect((self.width()/2) - (pixmap.width()/2), (self.height()/2) - (pixmap.height()/2), pixmap.width(), pixmap.height()))
 
             print("[INFO] RATE btn clicked. Next image should be visible.")
 
