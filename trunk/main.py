@@ -508,7 +508,6 @@ class Ui_Train(QtGui.QMainWindow):
         self.rate_label = QtGui.QLabel(self)
         self.rate_label.setText("What do you think of this photo?")
         self.rate_label.setStyleSheet("QLabel { color: white; font: 18px; }")
-        self.rate_label.setGeometry(QtCore.QRect(250, 460, 400, 30))
         self.rate_label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
 
         star_empty = QPixmap("star_empty.png")
@@ -517,17 +516,12 @@ class Ui_Train(QtGui.QMainWindow):
 
         stars = []
 
-        # Make the stars and position them
+        # Make the stars
         self.star_1 = StarButton('', self)
-        self.star_1.setGeometry(QtCore.QRect(225, 500, 97, 27))
         self.star_2 = StarButton('', self)
-        self.star_2.setGeometry(QtCore.QRect(325, 500, 97, 27))
         self.star_3 = StarButton('', self)
-        self.star_3.setGeometry(QtCore.QRect(425, 500, 97, 27))
         self.star_4 = StarButton('', self)
-        self.star_4.setGeometry(QtCore.QRect(525, 500, 97, 27))
         self.star_5 = StarButton('', self)
-        self.star_5.setGeometry(QtCore.QRect(625, 500, 97, 27))
 
         stars.append(self.star_1)
         stars.append(self.star_2)
@@ -571,7 +565,6 @@ class Ui_Train(QtGui.QMainWindow):
 
 
         self.finish_Button = QtGui.QPushButton('Finish', self)
-        self.finish_Button.setGeometry(QtCore.QRect(670, 580, 100, 30))
         self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
@@ -582,6 +575,16 @@ class Ui_Train(QtGui.QMainWindow):
 
         # prevent window minimization
         self.setFixedSize(self.width(), self.height())
+
+        self.rate_label.setGeometry(QtCore.QRect((self.width()*0.40), (self.height()*0.065), 400, 30))
+        self.finish_Button.setGeometry(QtCore.QRect((self.width()*0.70), (self.height()*0.95), 100, 30))
+
+        self.star_1.setGeometry(QtCore.QRect((self.width()*0.40), (self.height()*0.88), 97, 27))
+        self.star_2.setGeometry(QtCore.QRect((self.width()*0.45), (self.height()*0.88), 97, 27))
+        self.star_3.setGeometry(QtCore.QRect((self.width()*0.50), (self.height()*0.88), 97, 27))
+        self.star_4.setGeometry(QtCore.QRect((self.width()*0.55), (self.height()*0.88), 97, 27))
+        self.star_5.setGeometry(QtCore.QRect((self.width()*0.60), (self.height()*0.88), 97, 27))
+
 
         self.current_img = self.get_next_image(self.imgs_unscored)
         if  self.current_img == None:
@@ -597,6 +600,8 @@ class Ui_Train(QtGui.QMainWindow):
             else:
                 print("[INFO] displaying a pixmap")
                 self.train_imageLabel.setPixmap(pixmap)
+                self.train_imageLabel.setGeometry(QtCore.QRect((self.width()/2) - (pixmap.width()/2), (self.height()/2) - (pixmap.height()/2), pixmap.width(), pixmap.height()))
+
             self.train_imageLabel.setObjectName('train_imageLabel')
             self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
@@ -672,10 +677,9 @@ class Ui_Train(QtGui.QMainWindow):
             print("[INFO] No image to rate.")
             # TODO: Produce dialog informing user end of list acheived
         else:
-            im = Image.open(open(self.current_img['imgPath'], 'rb'))
-
-            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
-            self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+            pixmap = QPixmap(self.current_img['imgPath'])
+            self.train_imageLabel.setPixmap(pixmap)
+            self.train_imageLabel.setGeometry(QtCore.QRect((self.width()/2) - (pixmap.width()/2), (self.height()/2) - (pixmap.height()/2), pixmap.width(), pixmap.height()))
 
             print("[INFO] RATE btn clicked. Next image should be visible.")
 
