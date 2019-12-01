@@ -31,6 +31,7 @@ import glob
 import json
 import shutil
 import pickle
+import numpy as np
 
 # try:
 #     _fromUtf8 = QtCore.QString.fromUtf8
@@ -362,6 +363,44 @@ class Ui_Selekti(QtGui.QMainWindow):
         print("[INFO] Sorted (descending) Total samples:")
         totalSamples.sort(key=lambda i: i['mean_score_prediction'], reverse=True)
         print(json.dumps(totalSamples, indent=2))
+
+        modelPath = os.path.sep.join(["personalModel", "model.cpickle"])
+        
+        bUsePM = False
+        paths_with_scores = []
+
+        if os.path.exists(modelPath):
+            print("[INFO] MODEL PATH EXISTS: {}".format(modelPath))
+            bUsePM = True
+            # Initialize model to use its feature extraction method
+            personal_model = PersonalModel(modelPath)
+
+            # Grab top 50% of General Model's output
+            top_half = totalSamples[:len(totalSamples)//2]
+
+            feat_vecs = []
+            img_paths = []
+            for datum in top_half:
+                feat_vecs.append(personal_model.getFeatureVector(datum['image_path']))
+                img_paths.append(datum['image_path'])
+
+
+            feat_vecs_np = np.array(feat_vecs)
+            feat_vecs_np = np.squeeze(feat_vecs_np)
+
+            predictions = personal_model.model.predict(feat_vecs_np)
+            print("[INFO] Number of samples for PM: {}".format(len(top_half)))
+            print("[INFO] Predictions: {}".format(predictions))
+
+            paths_with_scores = list(zip(img_paths, predictions))
+            # sort (descending) by the second tuple value (the score)
+            paths_with_scores.sort(key=lambda x: x[1], reverse=True)
+
+            print("[INFO] ***paths with scores***")
+            for tup in paths_with_scores:
+                print("[INFO] {}, {}".format(tup[0], tup[1]))
+            
+
         
         # Creates new directory name. Checks if previous directory exists.
         self.new_dir_title = self.create_directory_name()
@@ -378,14 +417,23 @@ class Ui_Selekti(QtGui.QMainWindow):
         # 20% for now
         num_to_pick = int(len(totalSamples) * 0.2)
 
-        i = 0
+        # so before copying pics into new dir, see if we need to use the PM
+        # if so, pass 40% of PM's picks into 
+
+        if bUsePM:
+            print("[INFO] PM Used")
+            for i, sample in enumerate(paths_with_scores):
+                if i == num_to_pick:
+                    break
+                shutil.copy(sample[0], self.new_dir)
+        else:
         # since totalSamples is now sorted with the highest rated
         # pics first, the loop will only copy the first 'num_to_pick' images
-        for sample in totalSamples:
-            if i == num_to_pick:
-                break
-            shutil.copy(sample['image_path'], self.new_dir)
-            i += 1
+            print("[INFO] GENERAL used")
+            for i, sample in enumerate(totalSamples):
+                if i == num_to_pick:
+                    break
+                shutil.copy(sample['image_path'], self.new_dir)
 
         self.done_msg = QtGui.QMessageBox()
         self.done_msg.setWindowTitle("Processing Complete!")
