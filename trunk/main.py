@@ -665,6 +665,8 @@ class Ui_Train(QtGui.QMainWindow):
         print("[INFO] PM training commenced.")
         self.model.trainModel(featvecs, scores)
 
+        self.model.saveModel()
+
         # Save the feedback dict    
         f = open(self.feedback_path, "wb")
         f.write(pickle.dumps(self.feedback))
