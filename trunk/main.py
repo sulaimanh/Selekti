@@ -461,7 +461,11 @@ class Ui_Selekti(QtGui.QMainWindow):
         return self.new_dir_title
 
     def updateMainImage(self, image):
-        self.main_imageLabel.setPixmap(QPixmap(image))
+        pixmap = QPixmap(image)
+        if pixmap.width() == 0 or pixmap.width() > self.width() or pixmap.height() > self.height():
+            QMessageBox.critical(self, "Uh oh!", "Could not display:\n {}".format(image))
+        else:
+            self.main_imageLabel.setPixmap(pixmap)
         # if self.main_imageLabel.width() > self.WINDOW_WIDTH and self.main_imageLabel.height() > self.WINDOW_HEIGHT:
         #    self.resize(self.main_imageLabel.width(),self.main_imageLabel.height())
 
@@ -581,7 +585,15 @@ class Ui_Train(QtGui.QMainWindow):
             print("[INFO] No images to score.")
         else:
             # click on the train image
-            self.train_imageLabel.setPixmap(QPixmap(self.current_img['imgPath']))
+            pixmap = QPixmap(self.current_img['imgPath'])
+
+            # sometimes the pixmap is null
+            if pixmap.width() == 0 or pixmap.width() > self.width() or pixmap.height() > self.height():
+                QMessageBox.critical(self, "Uh oh!", "Could not display:\n {}\n\nYou can still rate it by clicking on a star.".format(self.current_img['imgPath']))
+
+            else:
+                print("[INFO] displaying a pixmap")
+                self.train_imageLabel.setPixmap(pixmap)
             self.train_imageLabel.setObjectName('train_imageLabel')
             self.train_imageLabel.mousePressEvent = self.train_image_clicked
             print("[INFO] Starting image was set.")
