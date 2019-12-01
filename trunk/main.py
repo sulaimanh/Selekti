@@ -484,9 +484,7 @@ class Ui_Train(QtGui.QMainWindow):
         super(Ui_Train, self).__init__(parent)
 
         self.setWindowTitle(("Train"))   
-        self.WINDOW_WIDTH = 900
-        self.WINDOW_HEIGHT = 630
-        self.setFixedSize(self.WINDOW_WIDTH, self.WINDOW_HEIGHT)
+        self.setWindowState(QtCore.Qt.WindowMaximized)
         self.isTrainWindowShown = True
         self.importedFiles = ImageData(self.imgs, self.isTrainWindowShown)
 
@@ -577,8 +575,13 @@ class Ui_Train(QtGui.QMainWindow):
         self.finish_Button.clicked.connect(self.finish_Button_clicked)
 
         self.train_imageLabel = QtGui.QLabel(self)
-        self.train_imageLabel.setGeometry(QtCore.QRect(100, 60, 700, 400))
         self.train_imageLabel.setAlignment(QtCore.Qt.AlignCenter)
+
+        # need to show the win before trying to access its size below
+        self.show()
+
+        # prevent window minimization
+        self.setFixedSize(self.width(), self.height())
 
         self.current_img = self.get_next_image(self.imgs_unscored)
         if  self.current_img == None:
@@ -609,7 +612,6 @@ class Ui_Train(QtGui.QMainWindow):
         else:
             self.feedback = {}
 
-        self.show()
 
     def get_next_image(self, imageList):
         if not imageList:
